@@ -9,7 +9,8 @@ import 'start/widgets/app_startup_widget.dart';
 /// 
 /// The [ProviderScope] acts as the root container for all providers,
 /// similar to how InheritedWidget works but with much more power and flexibility.
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     // ProviderScope is the foundation of Riverpod
     // All providers must be descendants of ProviderScope

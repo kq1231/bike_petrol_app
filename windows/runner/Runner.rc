@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "riverpod_architecture_starter" "\0"
+            VALUE "FileDescription", "bike_petrol_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "riverpod_architecture_starter" "\0"
+            VALUE "InternalName", "bike_petrol_app" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "riverpod_architecture_starter.exe" "\0"
-            VALUE "ProductName", "riverpod_architecture_starter" "\0"
+            VALUE "OriginalFilename", "bike_petrol_app.exe" "\0"
+            VALUE "ProductName", "bike_petrol_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

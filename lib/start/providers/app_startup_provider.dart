@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../common/providers/objectbox_store_provider.dart';
 
 /// Provider that handles application startup and initialization.
 /// 
@@ -26,15 +27,13 @@ class AppStartupNotifier extends AsyncNotifier<void> {
     // The build method is called once when the provider is first accessed
     // If initialization fails, throw an exception and AppStartupWidget will show an error
     
-    // Simulate async initialization (e.g., database setup, service initialization)
-    // In a real app, you would initialize your services here using ref:
-    // 
-    // Example:
-    // await ref.read(databaseServiceProvider).initialize();
+    // Initialize ObjectBox database
+    // This ensures the database is ready before the app starts
+    await ref.watch(objectBoxStoreProvider.future);
+    
+    // Add other service initializations here as needed:
     // await ref.read(authServiceProvider).checkAuthStatus();
     // await ref.read(notificationServiceProvider).initialize();
-    
-    await Future.delayed(const Duration(seconds: 2));
     
     // If initialization succeeds, this completes normally
     // The fact that this completes successfully is enough to signal "app is ready"
@@ -48,8 +47,8 @@ class AppStartupNotifier extends AsyncNotifier<void> {
     
     // Re-run initialization
     state = await AsyncValue.guard(() async {
-      await Future.delayed(const Duration(seconds: 2));
-      // Perform initialization again
+      // Re-initialize ObjectBox
+      await ref.read(objectBoxStoreProvider.future);
     });
   }
 }
