@@ -4,7 +4,6 @@ import 'package:bike_petrol_app/start/widgets/app_startup_widget.dart';
 import 'package:bike_petrol_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:bike_petrol_app/features/refill/screens/refill_screen.dart';
 import 'package:bike_petrol_app/features/journey/screens/journey_screen.dart';
-import 'package:bike_petrol_app/features/journey/screens/estimator_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +37,6 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     const DashboardScreen(),
     const RefillScreen(),
     const JourneyScreen(),
-    const EstimatorScreen(),
   ];
 
   @override
@@ -54,9 +52,10 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.local_gas_station), label: 'Refill'),
-          BottomNavigationBarItem(icon: Icon(Icons.alt_route), label: 'Journey'),
-          BottomNavigationBarItem(icon: Icon(Icons.calculate), label: 'Estimate'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.local_gas_station), label: 'Refill'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.alt_route), label: 'Journey'),
         ],
       ),
     );

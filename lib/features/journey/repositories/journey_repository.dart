@@ -22,3 +22,7 @@ class JourneyRepository {
     _box.remove(id);
   }
 }
+
+final journeyRepositoryProvider = Provider<JourneyRepository>((ref) {
+  return JourneyRepository(ref);
+});
