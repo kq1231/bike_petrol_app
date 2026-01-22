@@ -4,29 +4,161 @@
   "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
   "entities": [
     {
-      "id": "1:5600487620328257227",
-      "lastPropertyId": "1:7696073736322935789",
-      "name": "Dummy",
+      "id": "2:208712481387095329",
+      "lastPropertyId": "4:758612807979590988",
+      "name": "Bike",
       "properties": [
         {
-          "id": "1:7696073736322935789",
+          "id": "1:7252604675639949239",
           "name": "id",
           "type": 6,
           "flags": 1
+        },
+        {
+          "id": "2:6003216044722082083",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:7851420955384706790",
+          "name": "mileage",
+          "type": 8
+        },
+        {
+          "id": "4:758612807979590988",
+          "name": "createdAt",
+          "type": 10
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:2902924495890052352",
+      "lastPropertyId": "12:1579940159086348866",
+      "name": "Journey",
+      "properties": [
+        {
+          "id": "1:7641130873420570131",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4768094649018880550",
+          "name": "date",
+          "type": 10
+        },
+        {
+          "id": "3:3767028253690789688",
+          "name": "startName",
+          "type": 9
+        },
+        {
+          "id": "4:3457986026932955455",
+          "name": "startLat",
+          "type": 8
+        },
+        {
+          "id": "5:6020285067093799148",
+          "name": "startLng",
+          "type": 8
+        },
+        {
+          "id": "6:2566742726932237790",
+          "name": "endName",
+          "type": 9
+        },
+        {
+          "id": "7:6841279376649175759",
+          "name": "endLat",
+          "type": 8
+        },
+        {
+          "id": "8:2668896521866183210",
+          "name": "endLng",
+          "type": 8
+        },
+        {
+          "id": "9:910581721345098182",
+          "name": "distanceKm",
+          "type": 8
+        },
+        {
+          "id": "10:1823720486798616729",
+          "name": "isRoundTrip",
+          "type": 1
+        },
+        {
+          "id": "11:8728340468016649338",
+          "name": "notes",
+          "type": 9
+        },
+        {
+          "id": "12:1579940159086348866",
+          "name": "litresConsumed",
+          "type": 8
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:5844654028914647003",
+      "lastPropertyId": "7:3122333968526066037",
+      "name": "Refill",
+      "properties": [
+        {
+          "id": "1:291807275121740439",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4098578836804114115",
+          "name": "date",
+          "type": 10
+        },
+        {
+          "id": "3:677190385551876507",
+          "name": "litres",
+          "type": 8
+        },
+        {
+          "id": "4:4445346549214323218",
+          "name": "totalCost",
+          "type": 8
+        },
+        {
+          "id": "5:5465770708334193877",
+          "name": "costPerLitre",
+          "type": 8
+        },
+        {
+          "id": "6:6543739396089970405",
+          "name": "odometerReading",
+          "type": 6
+        },
+        {
+          "id": "7:3122333968526066037",
+          "name": "notes",
+          "type": 9
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "1:5600487620328257227",
+  "lastEntityId": "4:5844654028914647003",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    5600487620328257227
+  ],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    7696073736322935789
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

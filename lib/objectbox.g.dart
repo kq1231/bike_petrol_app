@@ -14,22 +14,176 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
-import 'common/models/dummy_model.dart';
+import 'common/models/bike.dart';
+import 'common/models/journey.dart';
+import 'common/models/refill.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
 final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(1, 5600487620328257227),
-    name: 'Dummy',
-    lastPropertyId: const obx_int.IdUid(1, 7696073736322935789),
+    id: const obx_int.IdUid(2, 208712481387095329),
+    name: 'Bike',
+    lastPropertyId: const obx_int.IdUid(4, 758612807979590988),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 7696073736322935789),
+        id: const obx_int.IdUid(1, 7252604675639949239),
         name: 'id',
         type: 6,
         flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 6003216044722082083),
+        name: 'name',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 7851420955384706790),
+        name: 'mileage',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 758612807979590988),
+        name: 'createdAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(3, 2902924495890052352),
+    name: 'Journey',
+    lastPropertyId: const obx_int.IdUid(12, 1579940159086348866),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 7641130873420570131),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 4768094649018880550),
+        name: 'date',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 3767028253690789688),
+        name: 'startName',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 3457986026932955455),
+        name: 'startLat',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 6020285067093799148),
+        name: 'startLng',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 2566742726932237790),
+        name: 'endName',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 6841279376649175759),
+        name: 'endLat',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 2668896521866183210),
+        name: 'endLng',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(9, 910581721345098182),
+        name: 'distanceKm',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(10, 1823720486798616729),
+        name: 'isRoundTrip',
+        type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 8728340468016649338),
+        name: 'notes',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(12, 1579940159086348866),
+        name: 'litresConsumed',
+        type: 8,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(4, 5844654028914647003),
+    name: 'Refill',
+    lastPropertyId: const obx_int.IdUid(7, 3122333968526066037),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 291807275121740439),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 4098578836804114115),
+        name: 'date',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 677190385551876507),
+        name: 'litres',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 4445346549214323218),
+        name: 'totalCost',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 5465770708334193877),
+        name: 'costPerLitre',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 6543739396089970405),
+        name: 'odometerReading',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 3122333968526066037),
+        name: 'notes',
+        type: 9,
+        flags: 0,
       ),
     ],
     relations: <obx_int.ModelRelation>[],
@@ -80,13 +234,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(1, 5600487620328257227),
+    lastEntityId: const obx_int.IdUid(4, 5844654028914647003),
     lastIndexId: const obx_int.IdUid(0, 0),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
-    retiredEntityUids: const [],
+    retiredEntityUids: const [5600487620328257227],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [],
+    retiredPropertyUids: const [7696073736322935789],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -94,26 +248,210 @@ obx_int.ModelDefinition getObjectBoxModel() {
   );
 
   final bindings = <Type, obx_int.EntityDefinition>{
-    Dummy: obx_int.EntityDefinition<Dummy>(
+    Bike: obx_int.EntityDefinition<Bike>(
       model: _entities[0],
-      toOneRelations: (Dummy object) => [],
-      toManyRelations: (Dummy object) => {},
-      getId: (Dummy object) => object.id,
-      setId: (Dummy object, int id) {
+      toOneRelations: (Bike object) => [],
+      toManyRelations: (Bike object) => {},
+      getId: (Bike object) => object.id,
+      setId: (Bike object, int id) {
         object.id = id;
       },
-      objectToFB: (Dummy object, fb.Builder fbb) {
-        fbb.startTable(2);
+      objectToFB: (Bike object, fb.Builder fbb) {
+        final nameOffset = fbb.writeString(object.name);
+        fbb.startTable(5);
         fbb.addInt64(0, object.id);
+        fbb.addOffset(1, nameOffset);
+        fbb.addFloat64(2, object.mileage);
+        fbb.addInt64(3, object.createdAt.millisecondsSinceEpoch);
         fbb.finish(fbb.endTable());
         return object.id;
       },
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final mileageParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          0,
+        );
+        final object = Bike(name: nameParam, mileage: mileageParam)
+          ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
+          ..createdAt = DateTime.fromMillisecondsSinceEpoch(
+            const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
+          );
 
-        final object = Dummy()
-          ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+        return object;
+      },
+    ),
+    Journey: obx_int.EntityDefinition<Journey>(
+      model: _entities[1],
+      toOneRelations: (Journey object) => [],
+      toManyRelations: (Journey object) => {},
+      getId: (Journey object) => object.id,
+      setId: (Journey object, int id) {
+        object.id = id;
+      },
+      objectToFB: (Journey object, fb.Builder fbb) {
+        final startNameOffset = fbb.writeString(object.startName);
+        final endNameOffset = fbb.writeString(object.endName);
+        final notesOffset = object.notes == null
+            ? null
+            : fbb.writeString(object.notes!);
+        fbb.startTable(13);
+        fbb.addInt64(0, object.id);
+        fbb.addInt64(1, object.date.millisecondsSinceEpoch);
+        fbb.addOffset(2, startNameOffset);
+        fbb.addFloat64(3, object.startLat);
+        fbb.addFloat64(4, object.startLng);
+        fbb.addOffset(5, endNameOffset);
+        fbb.addFloat64(6, object.endLat);
+        fbb.addFloat64(7, object.endLng);
+        fbb.addFloat64(8, object.distanceKm);
+        fbb.addBool(9, object.isRoundTrip);
+        fbb.addOffset(10, notesOffset);
+        fbb.addFloat64(11, object.litresConsumed);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final dateParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
+        );
+        final startNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final startLatParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final startLngParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        final endNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 14, '');
+        final endLatParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        final endLngParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          18,
+          0,
+        );
+        final distanceKmParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          20,
+          0,
+        );
+        final isRoundTripParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          22,
+          false,
+        );
+        final notesParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 24);
+        final litresConsumedParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          26,
+          0,
+        );
+        final object = Journey(
+          date: dateParam,
+          startName: startNameParam,
+          startLat: startLatParam,
+          startLng: startLngParam,
+          endName: endNameParam,
+          endLat: endLatParam,
+          endLng: endLngParam,
+          distanceKm: distanceKmParam,
+          isRoundTrip: isRoundTripParam,
+          notes: notesParam,
+          litresConsumed: litresConsumedParam,
+        )..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+        return object;
+      },
+    ),
+    Refill: obx_int.EntityDefinition<Refill>(
+      model: _entities[2],
+      toOneRelations: (Refill object) => [],
+      toManyRelations: (Refill object) => {},
+      getId: (Refill object) => object.id,
+      setId: (Refill object, int id) {
+        object.id = id;
+      },
+      objectToFB: (Refill object, fb.Builder fbb) {
+        final notesOffset = object.notes == null
+            ? null
+            : fbb.writeString(object.notes!);
+        fbb.startTable(8);
+        fbb.addInt64(0, object.id);
+        fbb.addInt64(1, object.date.millisecondsSinceEpoch);
+        fbb.addFloat64(2, object.litres);
+        fbb.addFloat64(3, object.totalCost);
+        fbb.addFloat64(4, object.costPerLitre);
+        fbb.addInt64(5, object.odometerReading);
+        fbb.addOffset(6, notesOffset);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final dateParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
+        );
+        final litresParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          0,
+        );
+        final totalCostParam = const fb.Float64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          10,
+        );
+        final costPerLitreParam = const fb.Float64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          12,
+        );
+        final odometerReadingParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          14,
+        );
+        final notesParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 16);
+        final object = Refill(
+          date: dateParam,
+          litres: litresParam,
+          totalCost: totalCostParam,
+          costPerLitre: costPerLitreParam,
+          odometerReading: odometerReadingParam,
+          notes: notesParam,
+        )..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
         return object;
       },
@@ -123,8 +461,120 @@ obx_int.ModelDefinition getObjectBoxModel() {
   return obx_int.ModelDefinition(model, bindings);
 }
 
-/// [Dummy] entity fields to define ObjectBox queries.
-class Dummy_ {
-  /// See [Dummy.id].
-  static final id = obx.QueryIntegerProperty<Dummy>(_entities[0].properties[0]);
+/// [Bike] entity fields to define ObjectBox queries.
+class Bike_ {
+  /// See [Bike.id].
+  static final id = obx.QueryIntegerProperty<Bike>(_entities[0].properties[0]);
+
+  /// See [Bike.name].
+  static final name = obx.QueryStringProperty<Bike>(_entities[0].properties[1]);
+
+  /// See [Bike.mileage].
+  static final mileage = obx.QueryDoubleProperty<Bike>(
+    _entities[0].properties[2],
+  );
+
+  /// See [Bike.createdAt].
+  static final createdAt = obx.QueryDateProperty<Bike>(
+    _entities[0].properties[3],
+  );
+}
+
+/// [Journey] entity fields to define ObjectBox queries.
+class Journey_ {
+  /// See [Journey.id].
+  static final id = obx.QueryIntegerProperty<Journey>(
+    _entities[1].properties[0],
+  );
+
+  /// See [Journey.date].
+  static final date = obx.QueryDateProperty<Journey>(
+    _entities[1].properties[1],
+  );
+
+  /// See [Journey.startName].
+  static final startName = obx.QueryStringProperty<Journey>(
+    _entities[1].properties[2],
+  );
+
+  /// See [Journey.startLat].
+  static final startLat = obx.QueryDoubleProperty<Journey>(
+    _entities[1].properties[3],
+  );
+
+  /// See [Journey.startLng].
+  static final startLng = obx.QueryDoubleProperty<Journey>(
+    _entities[1].properties[4],
+  );
+
+  /// See [Journey.endName].
+  static final endName = obx.QueryStringProperty<Journey>(
+    _entities[1].properties[5],
+  );
+
+  /// See [Journey.endLat].
+  static final endLat = obx.QueryDoubleProperty<Journey>(
+    _entities[1].properties[6],
+  );
+
+  /// See [Journey.endLng].
+  static final endLng = obx.QueryDoubleProperty<Journey>(
+    _entities[1].properties[7],
+  );
+
+  /// See [Journey.distanceKm].
+  static final distanceKm = obx.QueryDoubleProperty<Journey>(
+    _entities[1].properties[8],
+  );
+
+  /// See [Journey.isRoundTrip].
+  static final isRoundTrip = obx.QueryBooleanProperty<Journey>(
+    _entities[1].properties[9],
+  );
+
+  /// See [Journey.notes].
+  static final notes = obx.QueryStringProperty<Journey>(
+    _entities[1].properties[10],
+  );
+
+  /// See [Journey.litresConsumed].
+  static final litresConsumed = obx.QueryDoubleProperty<Journey>(
+    _entities[1].properties[11],
+  );
+}
+
+/// [Refill] entity fields to define ObjectBox queries.
+class Refill_ {
+  /// See [Refill.id].
+  static final id = obx.QueryIntegerProperty<Refill>(
+    _entities[2].properties[0],
+  );
+
+  /// See [Refill.date].
+  static final date = obx.QueryDateProperty<Refill>(_entities[2].properties[1]);
+
+  /// See [Refill.litres].
+  static final litres = obx.QueryDoubleProperty<Refill>(
+    _entities[2].properties[2],
+  );
+
+  /// See [Refill.totalCost].
+  static final totalCost = obx.QueryDoubleProperty<Refill>(
+    _entities[2].properties[3],
+  );
+
+  /// See [Refill.costPerLitre].
+  static final costPerLitre = obx.QueryDoubleProperty<Refill>(
+    _entities[2].properties[4],
+  );
+
+  /// See [Refill.odometerReading].
+  static final odometerReading = obx.QueryIntegerProperty<Refill>(
+    _entities[2].properties[5],
+  );
+
+  /// See [Refill.notes].
+  static final notes = obx.QueryStringProperty<Refill>(
+    _entities[2].properties[6],
+  );
 }

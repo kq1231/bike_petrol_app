@@ -1,37 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'start/widgets/app_startup_widget.dart';
+import 'package:bike_petrol_app/start/widgets/app_startup_widget.dart';
+import 'package:bike_petrol_app/features/dashboard/screens/dashboard_screen.dart';
+import 'package:bike_petrol_app/features/refill/screens/refill_screen.dart';
+import 'package:bike_petrol_app/features/journey/screens/journey_screen.dart';
+import 'package:bike_petrol_app/features/journey/screens/estimator_screen.dart';
 
-/// The main entry point of the application.
-/// 
-/// We wrap the entire app in a [ProviderScope] which is required for Riverpod.
-/// This enables dependency injection and state management throughout the app.
-/// 
-/// The [ProviderScope] acts as the root container for all providers,
-/// similar to how InheritedWidget works but with much more power and flexibility.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    // ProviderScope is the foundation of Riverpod
-    // All providers must be descendants of ProviderScope
     const ProviderScope(
       child: MyApp(),
     ),
   );
 }
 
-/// The root widget of the application.
-/// 
-/// This is kept minimal - the real app initialization happens in [AppStartupWidget].
-/// This separation allows us to handle async initialization (database setup, 
-/// service initialization, etc.) before showing the main app.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // AppStartupWidget handles the async initialization flow
-    // It will show loading states while services are being initialized
     return const AppStartupWidget();
+  }
+}
+
+class MainNavigation extends ConsumerStatefulWidget {
+  const MainNavigation({super.key});
+
+  @override
+  ConsumerState<MainNavigation> createState() => _MainNavigationState();
+}
+
+class _MainNavigationState extends ConsumerState<MainNavigation> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const DashboardScreen(),
+    const RefillScreen(),
+    const JourneyScreen(),
+    const EstimatorScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.local_gas_station), label: 'Refill'),
+          BottomNavigationBarItem(icon: Icon(Icons.alt_route), label: 'Journey'),
+          BottomNavigationBarItem(icon: Icon(Icons.calculate), label: 'Estimate'),
+        ],
+      ),
+    );
   }
 }

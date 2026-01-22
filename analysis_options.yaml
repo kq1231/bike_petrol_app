@@ -13,21 +13,5 @@ analyzer:
     # Warn about TODOs
     todo: ignore
 
-linter:
-  rules:
-    # Riverpod specific
-    - prefer_const_constructors
-    - prefer_const_literals_to_create_immutables
-    
-    # General best practices
-    - avoid_print
-    - prefer_single_quotes
-    - require_trailing_commas
-    - sort_child_properties_last
-    - use_key_in_widget_constructors
-    
-    # Documentation
-    - public_member_api_docs: false  # Set to true if you want to enforce documentation
-
 plugins:
   riverpod_lint: ^3.1.2

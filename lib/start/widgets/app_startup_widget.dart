@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/counter/screens/counter_screen.dart';
 import '../providers/app_startup_provider.dart';
+import '../../main.dart'; // Import MainNavigation
 
 /// Widget that handles the app startup flow with proper loading and error states.
 /// 
@@ -97,9 +97,8 @@ class AppStartupWidget extends ConsumerWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        // For a real app, you would set up your routes here
-        // For this starter, we just show the counter example
-        home: const CounterScreen(),
+        // Show the main navigation
+        home: const MainNavigation(),
       ),
     );
   }

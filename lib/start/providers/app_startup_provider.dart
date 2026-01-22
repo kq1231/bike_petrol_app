@@ -29,7 +29,7 @@ class AppStartupNotifier extends AsyncNotifier<void> {
     
     // Initialize ObjectBox database
     // This ensures the database is ready before the app starts
-    await ref.watch(objectBoxStoreProvider.future);
+    await ref.read(objectBoxStoreProvider.future);
     
     // Add other service initializations here as needed:
     // await ref.read(authServiceProvider).checkAuthStatus();
