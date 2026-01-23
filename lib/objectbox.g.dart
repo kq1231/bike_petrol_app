@@ -15,6 +15,7 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'common/models/bike.dart';
+import 'common/models/driving_route.dart';
 import 'common/models/journey.dart';
 import 'common/models/refill.dart';
 
@@ -189,6 +190,34 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(5, 8411032568290793809),
+    name: 'DrivingRoute',
+    lastPropertyId: const obx_int.IdUid(3, 477875252171361954),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 8359279148059529599),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1321211546970408218),
+        name: 'name',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 477875252171361954),
+        name: 'distanceKm',
+        type: 8,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -234,7 +263,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(4, 5844654028914647003),
+    lastEntityId: const obx_int.IdUid(5, 8411032568290793809),
     lastIndexId: const obx_int.IdUid(0, 0),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -269,6 +298,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
         final nameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 6, '');
@@ -278,8 +313,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           8,
           0,
         );
-        final object = Bike(name: nameParam, mileage: mileageParam)
-          ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
+        final object = Bike(id: idParam, name: nameParam, mileage: mileageParam)
           ..createdAt = DateTime.fromMillisecondsSinceEpoch(
             const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
           );
@@ -320,6 +354,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
         final dateParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
@@ -375,6 +415,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           0,
         );
         final object = Journey(
+          id: idParam,
           date: dateParam,
           startName: startNameParam,
           startLat: startLatParam,
@@ -386,7 +427,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           isRoundTrip: isRoundTripParam,
           notes: notesParam,
           litresConsumed: litresConsumedParam,
-        )..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+        );
 
         return object;
       },
@@ -417,6 +458,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
         final dateParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
@@ -445,13 +492,58 @@ obx_int.ModelDefinition getObjectBoxModel() {
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 16);
         final object = Refill(
+          id: idParam,
           date: dateParam,
           litres: litresParam,
           totalCost: totalCostParam,
           costPerLitre: costPerLitreParam,
           odometerReading: odometerReadingParam,
           notes: notesParam,
-        )..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+        );
+
+        return object;
+      },
+    ),
+    DrivingRoute: obx_int.EntityDefinition<DrivingRoute>(
+      model: _entities[3],
+      toOneRelations: (DrivingRoute object) => [],
+      toManyRelations: (DrivingRoute object) => {},
+      getId: (DrivingRoute object) => object.id,
+      setId: (DrivingRoute object, int id) {
+        object.id = id;
+      },
+      objectToFB: (DrivingRoute object, fb.Builder fbb) {
+        final nameOffset = fbb.writeString(object.name);
+        fbb.startTable(4);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, nameOffset);
+        fbb.addFloat64(2, object.distanceKm);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final distanceKmParam = const fb.Float64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          0,
+        );
+        final object = DrivingRoute(
+          id: idParam,
+          name: nameParam,
+          distanceKm: distanceKmParam,
+        );
 
         return object;
       },
@@ -576,5 +668,23 @@ class Refill_ {
   /// See [Refill.notes].
   static final notes = obx.QueryStringProperty<Refill>(
     _entities[2].properties[6],
+  );
+}
+
+/// [DrivingRoute] entity fields to define ObjectBox queries.
+class DrivingRoute_ {
+  /// See [DrivingRoute.id].
+  static final id = obx.QueryIntegerProperty<DrivingRoute>(
+    _entities[3].properties[0],
+  );
+
+  /// See [DrivingRoute.name].
+  static final name = obx.QueryStringProperty<DrivingRoute>(
+    _entities[3].properties[1],
+  );
+
+  /// See [DrivingRoute.distanceKm].
+  static final distanceKm = obx.QueryDoubleProperty<DrivingRoute>(
+    _entities[3].properties[2],
   );
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/dashboard/providers/dashboard_provider.dart';
+import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
+import 'package:bike_petrol_app/features/bike_profile/widgets/bike_dialog.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -12,14 +14,14 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: statsAsync.when(
-        data: (stats) => _buildBody(context, stats),
+        data: (stats) => _buildBody(context, stats, ref),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, DashboardStats stats) {
+  Widget _buildBody(BuildContext context, DashboardStats stats, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -90,11 +92,27 @@ class DashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _StatCard(
-                  title: 'Mileage',
-                  value: '${stats.avgMileage.toStringAsFixed(1)} km/L',
-                  icon: Icons.speed,
-                  color: Colors.teal,
+                child: GestureDetector(
+                  onTap: () {
+                    final bikeAsync = ref.read(bikeProvider);
+                    bikeAsync.whenData((bike) {
+                      if (bike != null) {
+                        showDialog(
+                            context: context,
+                            builder: (ctx) => BikeDialog(
+                                  initialBike: bike,
+                                  onSave: () => Navigator.of(context).pop(),
+                                ));
+                      }
+                    });
+                  },
+                  child: _StatCard(
+                    title: 'Mileage',
+                    value: '${stats.avgMileage.toStringAsFixed(1)} km/L',
+                    icon: Icons.speed,
+                    color: Colors.teal,
+                    isTappable: true,
+                  ),
                 ),
               ),
             ],
@@ -110,12 +128,14 @@ class _StatCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
+  final bool isTappable;
 
   const _StatCard({
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
+    this.isTappable = false,
   });
 
   @override
@@ -127,6 +147,8 @@ class _StatCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 20),
+            if (isTappable)
+              const Icon(Icons.edit, size: 12, color: Colors.grey),
             const SizedBox(height: 8),
             Text(
               title,

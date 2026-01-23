@@ -1,10 +1,10 @@
-import 'package:bike_petrol_app/features/journey/repositories/journey_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/journey/providers/journeys_provider.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
-import 'package:bike_petrol_app/common/services/map_service.dart';
+import 'package:bike_petrol_app/features/routes/providers/routes_provider.dart';
 import 'package:bike_petrol_app/common/models/journey.dart';
+import 'package:bike_petrol_app/common/models/driving_route.dart';
 
 class JourneyScreen extends ConsumerStatefulWidget {
   const JourneyScreen({super.key});
@@ -14,80 +14,53 @@ class JourneyScreen extends ConsumerStatefulWidget {
 }
 
 class _JourneyScreenState extends ConsumerState<JourneyScreen> {
-  final MapService _mapService = MapService();
-
-  // Form State
-  final _startController = TextEditingController();
-  final _endController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final _dateController = TextEditingController(
-    text: DateTime.now().toIso8601String().split('T')[0],
-  );
+      text: DateTime.now().toIso8601String().split('T')[0]);
+  final _distanceController = TextEditingController();
+  final _routeNameController = TextEditingController();
+
+  DrivingRoute? _selectedRoute;
   bool _isRoundTrip = false;
-  bool _isLoading = false;
-  double _distance = 0.0;
 
-  // Search Results
-  List<LocationResult> _startResults = [];
-  List<LocationResult> _endResults = [];
+  void _submit([Journey? existingJourney]) {
+    if (_formKey.currentState!.validate()) {
+      final distance = double.tryParse(_distanceController.text) ?? 0;
+      if (distance <= 0) return;
 
-  LocationResult? _selectedStart;
-  LocationResult? _selectedEnd;
+      // Get Mileage
+      final mileage = ref.read(bikeProvider).value?.mileage ?? 50.0;
 
-  Future<void> _search(String query, bool isStart) async {
-    if (query.isEmpty) return;
-    final results = await _mapService.searchLocation(query);
-    setState(() {
-      if (isStart) {
-        _startResults = results;
+      // Distance is already doubled in the text field if round trip is on
+      // So we use it directly without further multiplication
+      final litresConsumed = distance / mileage;
+
+      // Construct Name (Start -> End)
+      final routeName = _routeNameController.text.isNotEmpty
+          ? _routeNameController.text
+          : (_selectedRoute?.name ?? 'Custom Journey');
+
+      final journey = Journey(
+        id: existingJourney?.id ?? 0,
+        date: DateTime.parse(_dateController.text),
+        startName: routeName,
+        startLat: 0, // Not used without maps
+        startLng: 0, // Not used without maps
+        endName: 'Destination', // Generic since we don't track Lat/Lng
+        endLat: 0,
+        endLng: 0,
+        distanceKm: distance,
+        isRoundTrip: _isRoundTrip,
+        litresConsumed: litresConsumed,
+      );
+
+      if (existingJourney != null) {
+        ref.read(journeyListProvider.notifier).updateJourney(journey);
       } else {
-        _endResults = results;
+        ref.read(journeyListProvider.notifier).addJourney(journey);
       }
-    });
-  }
-
-  Future<void> _calculateRoute() async {
-    if (_selectedStart == null || _selectedEnd == null) return;
-
-    setState(() => _isLoading = true);
-    final dist = await _mapService.calculateDistance(
-      _selectedStart!.lat,
-      _selectedStart!.lng,
-      _selectedEnd!.lat,
-      _selectedEnd!.lng,
-    );
-    setState(() {
-      _distance = dist;
-      _isLoading = false;
-    });
-  }
-
-  void _submit() {
-    if (_selectedStart == null || _selectedEnd == null || _distance == 0) {
-      return;
+      Navigator.pop(context);
     }
-
-    // Get Mileage
-    final mileage = ref.read(bikeProvider).value?.mileage ?? 50.0;
-
-    // Total Distance
-    final totalDistance = _isRoundTrip ? _distance * 2 : _distance;
-    final litresConsumed = totalDistance / mileage;
-
-    final journey = Journey(
-      date: DateTime.parse(_dateController.text),
-      startName: _selectedStart!.name,
-      startLat: _selectedStart!.lat,
-      startLng: _selectedStart!.lng,
-      endName: _selectedEnd!.name,
-      endLat: _selectedEnd!.lat,
-      endLng: _selectedEnd!.lng,
-      distanceKm: totalDistance,
-      isRoundTrip: _isRoundTrip,
-      litresConsumed: litresConsumed,
-    );
-
-    ref.read(journeyRepositoryProvider).addJourney(journey);
-    Navigator.pop(context);
   }
 
   @override
@@ -96,33 +69,36 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Journeys')),
-      body: Column(
-        children: [
-          Expanded(
-            child: journeysAsync.when(
-              data: (journeys) => ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: journeys.length,
-                itemBuilder: (context, index) {
-                  final j = journeys[index];
-                  return Card(
-                    child: ListTile(
-                      title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
-                      subtitle: Text(
-                        '${j.startName.split(',')[0]} to ${j.endName.split(',')[0]}',
-                      ),
-                      trailing:
-                          Text('${j.litresConsumed.toStringAsFixed(2)} L'),
-                    ),
-                  );
-                },
+      body: journeysAsync.when(
+        data: (journeys) => ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: journeys.length,
+          itemBuilder: (context, index) {
+            final j = journeys[index];
+            return Dismissible(
+              key: Key('journey_${j.id}'),
+              onDismissed: (direction) {
+                ref.read(journeyListProvider.notifier).deleteJourney(j.id);
+              },
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20),
+                child: const Icon(Icons.delete, color: Colors.white),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, s) =>
-                  Center(child: Text('Error loading journeys: $e')),
-            ),
-          ),
-        ],
+              child: Card(
+                child: ListTile(
+                  onTap: () => _showAddDialog(context, journey: j),
+                  title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
+                  subtitle: Text(j.startName),
+                  trailing: Text('${j.litresConsumed.toStringAsFixed(2)} L'),
+                ),
+              ),
+            );
+          },
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text('Error: $e')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDialog(context),
@@ -131,109 +107,128 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     );
   }
 
-  void _showAddDialog(BuildContext context) {
+  void _showAddDialog(BuildContext context, {Journey? journey}) {
+    final routesAsync = ref.read(routesListProvider);
+
+    // Pre-fill if editing
+    if (journey != null) {
+      _dateController.text = journey.date.toIso8601String().split('T')[0];
+      _routeNameController.text = journey.startName;
+      // Load the stored distance (which is already the total/doubled distance)
+      _distanceController.text = journey.distanceKm.toString();
+      _isRoundTrip = journey.isRoundTrip;
+      _selectedRoute = null; // Clear selection when editing custom
+    } else {
+      _dateController.text = DateTime.now().toIso8601String().split('T')[0];
+      _routeNameController.clear();
+      _distanceController.clear();
+      _isRoundTrip = false;
+      _selectedRoute = null;
+    }
+
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Log Journey'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                // Start Location Search
-                TextField(
-                  controller: _startController,
-                  decoration:
-                      const InputDecoration(labelText: 'Start Location'),
-                  onChanged: (v) => _search(v, true),
-                ),
-                if (_startResults.isNotEmpty)
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _startResults.length,
-                    itemBuilder: (ctx, i) => ListTile(
-                      dense: true,
-                      title: Text(
-                        _startResults[i].name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            title: Text(journey == null ? 'Log Journey' : 'Edit Journey'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                  TextFormField(
+                    controller: _dateController,
+                    decoration: const InputDecoration(labelText: 'Date'),
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (date != null) {
+                        _dateController.text =
+                            date.toIso8601String().split('T')[0];
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Route Selector or Manual Input
+                  routesAsync.when(
+                    data: (routes) => DropdownButtonFormField<DrivingRoute>(
+                      decoration: const InputDecoration(
+                        label: Text(
+                          'Select Saved Route',
+                        ),
                       ),
-                      onTap: () {
+                      initialValue: _selectedRoute,
+                      items: routes
+                          .map((r) => DropdownMenuItem(
+                                value: r,
+                                child: Text('${r.name} (${r.distanceKm}km)'),
+                              ))
+                          .toList(),
+                      onChanged: (r) {
                         setDialogState(() {
-                          _selectedStart = _startResults[i];
-                          _startController.text =
-                              _startResults[i].name.split(',')[0];
-                          _startResults = [];
+                          _selectedRoute = r;
+                          if (r != null) {
+                            _routeNameController.text = r.name;
+                            // If Round Trip is ON, show doubled distance immediately
+                            final dist = _isRoundTrip ? r.distanceKm * 2 : r.distanceKm;
+                            _distanceController.text = dist.toString();
+                          }
                         });
                       },
                     ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, s) => const Text('Error loading routes'),
                   ),
 
-                const SizedBox(height: 10),
-
-                // End Location Search
-                TextField(
-                  controller: _endController,
-                  decoration: const InputDecoration(labelText: 'End Location'),
-                  onChanged: (v) => _search(v, false),
-                ),
-                if (_endResults.isNotEmpty)
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _endResults.length,
-                    itemBuilder: (ctx, i) => ListTile(
-                      dense: true,
-                      title: Text(
-                        _endResults[i].name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      onTap: () {
-                        setDialogState(() {
-                          _selectedEnd = _endResults[i];
-                          _endController.text =
-                              _endResults[i].name.split(',')[0];
-                          _endResults = [];
-                        });
-                      },
-                    ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _distanceController,
+                    decoration:
+                        const InputDecoration(labelText: 'Distance (km)'),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
 
-                const SizedBox(height: 10),
-                SwitchListTile(
-                  title: const Text('Round Trip'),
-                  value: _isRoundTrip,
-                  onChanged: (v) => setDialogState(() => _isRoundTrip = v),
-                ),
-
-                if (_isLoading)
-                  const Center(child: CircularProgressIndicator()),
-                if (_distance > 0)
-                  Text(
-                    'Distance: ${_distance.toStringAsFixed(1)} km',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  SwitchListTile(
+                    title: const Text('Round Trip'),
+                    value: _isRoundTrip,
+                    onChanged: (v) {
+                      setDialogState(() {
+                        _isRoundTrip = v;
+                        // Update distance field to reflect new total
+                        final currentDist = double.tryParse(_distanceController.text) ?? 0;
+                        if (currentDist > 0) {
+                          _distanceController.text = v 
+                              ? (currentDist * 2).toString() 
+                              : (currentDist / 2).toString();
+                        }
+                      });
+                    },
                   ),
-
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _calculateRoute,
-                  child: const Text('Calculate Distance'),
-                ),
-              ],
+                ],
+              ),
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: _distance > 0 ? _submit : null,
-              child: const Text('Save Journey'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel')),
+              ElevatedButton(
+                onPressed: () => _submit(journey),
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

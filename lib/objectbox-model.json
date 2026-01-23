@@ -144,9 +144,33 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "5:8411032568290793809",
+      "lastPropertyId": "3:477875252171361954",
+      "name": "DrivingRoute",
+      "properties": [
+        {
+          "id": "1:8359279148059529599",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1321211546970408218",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:477875252171361954",
+          "name": "distanceKm",
+          "type": 8
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "4:5844654028914647003",
+  "lastEntityId": "5:8411032568290793809",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

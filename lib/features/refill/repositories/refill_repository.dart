@@ -10,17 +10,25 @@ class RefillRepository {
 
   Box<Refill> get _box => ref.read(objectBoxStoreProvider).value!.box<Refill>();
 
-  List<Refill> getAllRefills() {
-    return _box.getAll()..sort((a, b) => b.date.compareTo(a.date));
+  List<Refill> getAllRefills({int? limit}) {
+    final query =
+        _box.query().order(Refill_.date, flags: Order.descending).build();
+    if (limit != null && limit > 0) query.limit = limit;
+    return query.find();
   }
 
-  Future<void> addRefill(Refill refill) async {
+  void addRefill(Refill refill) async {
     _box.put(refill);
     ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
   }
 
-  Future<void> deleteRefill(int id) async {
+  void deleteRefill(int id) async {
     _box.remove(id);
+    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+  }
+
+  void updateRefill(Refill refill) async {
+    _box.put(refill, mode: PutMode.update);
     ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
   }
 }

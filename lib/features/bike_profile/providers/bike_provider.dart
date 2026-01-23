@@ -1,36 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bike_petrol_app/objectbox.g.dart';
 import 'package:bike_petrol_app/common/models/bike.dart';
+import 'package:bike_petrol_app/features/bike_profile/repositories/bike_repository.dart';
 import 'package:bike_petrol_app/common/providers/objectbox_store_provider.dart';
 
-class BikeRepository {
-  final Ref ref;
-  
-  BikeRepository(this.ref);
-
-  Box<Bike> get _box => ref.read(objectBoxStoreProvider).value!.box<Bike>();
-
-  Bike? getBike() {
-    final bikes = _box.getAll();
-    return bikes.isNotEmpty ? bikes.first : null;
+// AsyncNotifier for Bike to handle CRUD state
+class BikeNotifier extends AsyncNotifier<Bike?> {
+  @override
+  Future<Bike?> build() async {
+    await ref.read(objectBoxStoreProvider.future);
+    final repo = ref.watch(bikeRepositoryProvider);
+    return repo.getBike();
   }
 
-  Future<void> saveBike(Bike bike) async {
-    if (bike.id == 0) {
-      _box.put(bike);
-    } else {
-      _box.put(bike, mode: PutMode.update);
-    }
+  void updateBike(Bike bike) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final repo = ref.read(bikeRepositoryProvider);
+      repo.saveBike(bike);
+      return repo.getBike(); // Return updated bike
+    });
   }
 }
 
-final bikeRepositoryProvider = Provider<BikeRepository>((ref) {
-  return BikeRepository(ref);
-});
-
-final bikeProvider = FutureProvider<Bike?>((ref) async {
-  // Ensure store is ready
-  await ref.watch(objectBoxStoreProvider.future);
-  final repo = ref.watch(bikeRepositoryProvider);
-  return repo.getBike();
+final bikeProvider = AsyncNotifierProvider<BikeNotifier, Bike?>(() {
+  return BikeNotifier();
 });

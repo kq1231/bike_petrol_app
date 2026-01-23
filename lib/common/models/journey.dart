@@ -2,7 +2,8 @@ import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class Journey {
-  int id = 0;
+  @Id()
+  int id;
 
   @Property()
   DateTime date;
@@ -19,13 +20,14 @@ class Journey {
 
   double distanceKm;
   bool isRoundTrip;
-  
+
   String? notes;
-  
+
   // Calculated field stored for convenience
-  double litresConsumed; 
+  double litresConsumed;
 
   Journey({
+    this.id = 0,
     required this.date,
     required this.startName,
     required this.startLat,
