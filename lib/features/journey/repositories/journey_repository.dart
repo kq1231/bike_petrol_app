@@ -44,17 +44,17 @@ class JourneyRepository {
 
   void addJourney(Journey journey) {
     _box.put(journey);
-    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+    
   }
 
   void deleteJourney(int id) {
     _box.remove(id);
-    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+    
   }
 
   void updateJourney(Journey journey) {
     _box.put(journey, mode: PutMode.update);
-    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+    
   }
 }
 

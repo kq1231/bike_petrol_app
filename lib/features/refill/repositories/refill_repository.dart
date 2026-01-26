@@ -40,17 +40,17 @@ class RefillRepository {
 
   void addRefill(Refill refill) async {
     _box.put(refill);
-    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+    
   }
 
   void deleteRefill(int id) async {
     _box.remove(id);
-    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+    
   }
 
   void updateRefill(Refill refill) async {
     _box.put(refill, mode: PutMode.update);
-    ref.invalidateSelf(); // -> This should rebuild all providers 'watching' this repository
+    
   }
 }
 
