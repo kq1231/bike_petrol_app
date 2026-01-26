@@ -70,33 +70,63 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Journeys')),
       body: journeysAsync.when(
-        data: (journeys) => ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: journeys.length,
-          itemBuilder: (context, index) {
-            final j = journeys[index];
-            return Dismissible(
-              key: Key('journey_${j.id}'),
-              onDismissed: (direction) {
-                ref.read(journeyListProvider.notifier).deleteJourney(j.id);
+        data: (paginatedState) {
+          final journeys = paginatedState.items;
+          
+          return RefreshIndicator(
+            onRefresh: () async {
+              await ref.read(journeyListProvider.notifier).refresh();
+            },
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                // Load more when user scrolls near bottom
+                if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                  if (paginatedState.hasMore && !paginatedState.isLoadingMore) {
+                    ref.read(journeyListProvider.notifier).loadMore();
+                  }
+                }
+                return false;
               },
-              background: Container(
-                color: Colors.red,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete, color: Colors.white),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: journeys.length + (paginatedState.hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  // Show loading indicator at bottom
+                  if (index == journeys.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  final j = journeys[index];
+                  return Dismissible(
+                    key: Key('journey_${j.id}'),
+                    onDismissed: (direction) {
+                      ref.read(journeyListProvider.notifier).deleteJourney(j.id);
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: Card(
+                      child: ListTile(
+                        onTap: () => _showAddDialog(context, journey: j),
+                        title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
+                        subtitle: Text(j.startName),
+                        trailing: Text('${j.litresConsumed.toStringAsFixed(2)} L'),
+                      ),
+                    ),
+                  );
+                },
               ),
-              child: Card(
-                child: ListTile(
-                  onTap: () => _showAddDialog(context, journey: j),
-                  title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
-                  subtitle: Text(j.startName),
-                  trailing: Text('${j.litresConsumed.toStringAsFixed(2)} L'),
-                ),
-              ),
-            );
-          },
-        ),
+            ),
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('Error: $e')),
       ),

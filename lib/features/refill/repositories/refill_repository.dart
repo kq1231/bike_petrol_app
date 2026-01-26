@@ -10,11 +10,32 @@ class RefillRepository {
 
   Box<Refill> get _box => ref.read(objectBoxStoreProvider).value!.box<Refill>();
 
-  List<Refill> getAllRefills({int? limit}) {
+  List<Refill> getAllRefills() {
     final query =
         _box.query().order(Refill_.date, flags: Order.descending).build();
-    if (limit != null && limit > 0) query.limit = limit;
-    return query.find();
+    final results = query.find();
+    query.close();
+    return results;
+  }
+
+  /// Get refills with pagination support
+  List<Refill> getRefillsPaginated({
+    required int limit,
+    required int offset,
+  }) {
+    final query =
+        _box.query().order(Refill_.date, flags: Order.descending).build();
+    query
+      ..limit = limit
+      ..offset = offset;
+    final results = query.find();
+    query.close();
+    return results;
+  }
+
+  /// Get total count of refills
+  int getTotalCount() {
+    return _box.count();
   }
 
   void addRefill(Refill refill) async {

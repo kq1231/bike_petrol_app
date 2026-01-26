@@ -5,8 +5,13 @@ class Journey {
   @Id()
   int id;
 
-  @Property()
   DateTime date;
+
+  // NEW: Time tracking fields
+  DateTime recordedAt; // When journey was logged in app (for sorting)
+
+  DateTime? startTime; // Optional: when journey started
+  DateTime? endTime; // Optional: when journey ended
 
   // Start Location
   String startName;
@@ -29,6 +34,9 @@ class Journey {
   Journey({
     this.id = 0,
     required this.date,
+    DateTime? recordedAt,
+    this.startTime,
+    this.endTime,
     required this.startName,
     required this.startLat,
     required this.startLng,
@@ -39,5 +47,5 @@ class Journey {
     this.isRoundTrip = false,
     this.notes,
     this.litresConsumed = 0,
-  });
+  }) : recordedAt = recordedAt ?? DateTime.now();
 }

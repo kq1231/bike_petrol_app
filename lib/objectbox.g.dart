@@ -59,7 +59,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(3, 2902924495890052352),
     name: 'Journey',
-    lastPropertyId: const obx_int.IdUid(12, 1579940159086348866),
+    lastPropertyId: const obx_int.IdUid(15, 8207742757970525650),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -132,6 +132,24 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(12, 1579940159086348866),
         name: 'litresConsumed',
         type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(13, 5274351405009697992),
+        name: 'recordedAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(14, 2410678496546923680),
+        name: 'startTime',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(15, 8207742757970525650),
+        name: 'endTime',
+        type: 10,
         flags: 0,
       ),
     ],
@@ -335,7 +353,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final notesOffset = object.notes == null
             ? null
             : fbb.writeString(object.notes!);
-        fbb.startTable(13);
+        fbb.startTable(16);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.date.millisecondsSinceEpoch);
         fbb.addOffset(2, startNameOffset);
@@ -348,12 +366,25 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addBool(9, object.isRoundTrip);
         fbb.addOffset(10, notesOffset);
         fbb.addFloat64(11, object.litresConsumed);
+        fbb.addInt64(12, object.recordedAt.millisecondsSinceEpoch);
+        fbb.addInt64(13, object.startTime?.millisecondsSinceEpoch);
+        fbb.addInt64(14, object.endTime?.millisecondsSinceEpoch);
         fbb.finish(fbb.endTable());
         return object.id;
       },
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final startTimeValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          30,
+        );
+        final endTimeValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          32,
+        );
         final idParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -363,6 +394,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final dateParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
+        final recordedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 28, 0),
+        );
+        final startTimeParam = startTimeValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(startTimeValue);
+        final endTimeParam = endTimeValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(endTimeValue);
         final startNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 8, '');
@@ -417,6 +457,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final object = Journey(
           id: idParam,
           date: dateParam,
+          recordedAt: recordedAtParam,
+          startTime: startTimeParam,
+          endTime: endTimeParam,
           startName: startNameParam,
           startLat: startLatParam,
           startLng: startLngParam,
@@ -632,6 +675,21 @@ class Journey_ {
   /// See [Journey.litresConsumed].
   static final litresConsumed = obx.QueryDoubleProperty<Journey>(
     _entities[1].properties[11],
+  );
+
+  /// See [Journey.recordedAt].
+  static final recordedAt = obx.QueryDateProperty<Journey>(
+    _entities[1].properties[12],
+  );
+
+  /// See [Journey.startTime].
+  static final startTime = obx.QueryDateProperty<Journey>(
+    _entities[1].properties[13],
+  );
+
+  /// See [Journey.endTime].
+  static final endTime = obx.QueryDateProperty<Journey>(
+    _entities[1].properties[14],
   );
 }
 

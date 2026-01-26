@@ -67,39 +67,69 @@ class _RefillScreenState extends ConsumerState<RefillScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Petrol Refills')),
       body: refillsAsync.when(
-        data: (refills) => ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: refills.length,
-          itemBuilder: (context, index) {
-            final r = refills[index];
-            return Dismissible(
-              key: Key('refill_${r.id}'),
-              onDismissed: (direction) async {
-                ref.read(refillListProvider.notifier).deleteRefill(r.id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${r.litres}L deleted')),
-                  );
+        data: (paginatedState) {
+          final refills = paginatedState.items;
+          
+          return RefreshIndicator(
+            onRefresh: () async {
+              await ref.read(refillListProvider.notifier).refresh();
+            },
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                // Load more when user scrolls near bottom
+                if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                  if (paginatedState.hasMore && !paginatedState.isLoadingMore) {
+                    ref.read(refillListProvider.notifier).loadMore();
+                  }
                 }
+                return false;
               },
-              background: Container(
-                color: Colors.red,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete, color: Colors.white),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: refills.length + (paginatedState.hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  // Show loading indicator at bottom
+                  if (index == refills.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  final r = refills[index];
+                  return Dismissible(
+                    key: Key('refill_${r.id}'),
+                    onDismissed: (direction) async {
+                      ref.read(refillListProvider.notifier).deleteRefill(r.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${r.litres}L deleted')),
+                        );
+                      }
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: Card(
+                      child: ListTile(
+                        onTap: () => _showAddDialog(context, refill: r),
+                        title: Text('${r.litres} L'),
+                        subtitle: Text('${r.date.toLocal()}'.split(' ')[0]),
+                        trailing:
+                            r.totalCost != null ? Text('\$${r.totalCost}') : null,
+                      ),
+                    ),
+                  );
+                },
               ),
-              child: Card(
-                child: ListTile(
-                  onTap: () => _showAddDialog(context, refill: r),
-                  title: Text('${r.litres} L'),
-                  subtitle: Text('${r.date.toLocal()}'.split(' ')[0]),
-                  trailing:
-                      r.totalCost != null ? Text('\$${r.totalCost}') : null,
-                ),
-              ),
-            );
-          },
-        ),
+            ),
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('Error: $e')),
       ),
