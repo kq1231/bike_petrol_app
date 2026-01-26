@@ -21,8 +21,6 @@ class BikeRepository {
     } else {
       _box.put(bike, mode: PutMode.update);
     }
-
-    ref.invalidateSelf(); // This will cause providers watching this repository to also invalidate
   }
 }
 

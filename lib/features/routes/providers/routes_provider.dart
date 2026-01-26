@@ -12,16 +12,19 @@ class RoutesList extends AsyncNotifier<List<DrivingRoute>> {
   void addRoute(DrivingRoute route) {
     final repo = ref.read(routesRepositoryProvider);
     repo.addRoute(route);
+    ref.invalidateSelf();
   }
 
   void deleteRoute(int id) {
     final repo = ref.read(routesRepositoryProvider);
     repo.deleteRoute(id);
+    ref.invalidateSelf();
   }
 
   void updateRoute(DrivingRoute route) {
     final repo = ref.read(routesRepositoryProvider);
     repo.updateRoute(route);
+    ref.invalidateSelf();
   }
 }
 
