@@ -1,3 +1,4 @@
+import 'package:bike_petrol_app/features/journey/providers/journeys_provider.dart';
 import 'package:bike_petrol_app/features/refill/providers/refill_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
@@ -26,6 +27,8 @@ class DashboardStats {
 final dashboardStatsProvider = Provider<DashboardStats>((ref) {
   // Watch the refill provider
   ref.watch(refillListProvider);
+  // Watch the journeys provider
+  ref.watch(journeyListProvider);
 
   // Watch bike provider
   final bike = ref.watch(bikeProvider);

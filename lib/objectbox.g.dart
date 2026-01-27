@@ -81,33 +81,9 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 3457986026932955455),
-        name: 'startLat',
-        type: 8,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 6020285067093799148),
-        name: 'startLng',
-        type: 8,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
         id: const obx_int.IdUid(6, 2566742726932237790),
         name: 'endName',
         type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(7, 6841279376649175759),
-        name: 'endLat',
-        type: 8,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(8, 2668896521866183210),
-        name: 'endLng',
-        type: 8,
         flags: 0,
       ),
       obx_int.ModelProperty(
@@ -299,7 +275,14 @@ obx_int.ModelDefinition getObjectBoxModel() {
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [5600487620328257227],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [7696073736322935789, 1321211546970408218],
+    retiredPropertyUids: const [
+      7696073736322935789,
+      1321211546970408218,
+      3457986026932955455,
+      6020285067093799148,
+      6841279376649175759,
+      2668896521866183210,
+    ],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -369,11 +352,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.date.millisecondsSinceEpoch);
         fbb.addOffset(2, startNameOffset);
-        fbb.addFloat64(3, object.startLat);
-        fbb.addFloat64(4, object.startLng);
         fbb.addOffset(5, endNameOffset);
-        fbb.addFloat64(6, object.endLat);
-        fbb.addFloat64(7, object.endLng);
         fbb.addFloat64(8, object.distanceKm);
         fbb.addBool(9, object.isRoundTrip);
         fbb.addOffset(10, notesOffset);
@@ -423,33 +402,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final startNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 8, '');
-        final startLatParam = const fb.Float64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          10,
-          0,
-        );
-        final startLngParam = const fb.Float64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          12,
-          0,
-        );
         final endNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 14, '');
-        final endLatParam = const fb.Float64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          16,
-          0,
-        );
-        final endLngParam = const fb.Float64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          18,
-          0,
-        );
         final distanceKmParam = const fb.Float64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -478,11 +433,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           startTime: startTimeParam,
           endTime: endTimeParam,
           startName: startNameParam,
-          startLat: startLatParam,
-          startLng: startLngParam,
           endName: endNameParam,
-          endLat: endLatParam,
-          endLng: endLngParam,
           distanceKm: distanceKmParam,
           isRoundTrip: isRoundTripParam,
           notes: notesParam,
@@ -663,64 +614,44 @@ class Journey_ {
     _entities[1].properties[2],
   );
 
-  /// See [Journey.startLat].
-  static final startLat = obx.QueryDoubleProperty<Journey>(
-    _entities[1].properties[3],
-  );
-
-  /// See [Journey.startLng].
-  static final startLng = obx.QueryDoubleProperty<Journey>(
-    _entities[1].properties[4],
-  );
-
   /// See [Journey.endName].
   static final endName = obx.QueryStringProperty<Journey>(
-    _entities[1].properties[5],
-  );
-
-  /// See [Journey.endLat].
-  static final endLat = obx.QueryDoubleProperty<Journey>(
-    _entities[1].properties[6],
-  );
-
-  /// See [Journey.endLng].
-  static final endLng = obx.QueryDoubleProperty<Journey>(
-    _entities[1].properties[7],
+    _entities[1].properties[3],
   );
 
   /// See [Journey.distanceKm].
   static final distanceKm = obx.QueryDoubleProperty<Journey>(
-    _entities[1].properties[8],
+    _entities[1].properties[4],
   );
 
   /// See [Journey.isRoundTrip].
   static final isRoundTrip = obx.QueryBooleanProperty<Journey>(
-    _entities[1].properties[9],
+    _entities[1].properties[5],
   );
 
   /// See [Journey.notes].
   static final notes = obx.QueryStringProperty<Journey>(
-    _entities[1].properties[10],
+    _entities[1].properties[6],
   );
 
   /// See [Journey.litresConsumed].
   static final litresConsumed = obx.QueryDoubleProperty<Journey>(
-    _entities[1].properties[11],
+    _entities[1].properties[7],
   );
 
   /// See [Journey.recordedAt].
   static final recordedAt = obx.QueryDateProperty<Journey>(
-    _entities[1].properties[12],
+    _entities[1].properties[8],
   );
 
   /// See [Journey.startTime].
   static final startTime = obx.QueryDateProperty<Journey>(
-    _entities[1].properties[13],
+    _entities[1].properties[9],
   );
 
   /// See [Journey.endTime].
   static final endTime = obx.QueryDateProperty<Journey>(
-    _entities[1].properties[14],
+    _entities[1].properties[10],
   );
 }
 

@@ -53,21 +53,21 @@ class PetrolWarningBanner extends ConsumerWidget {
         backgroundColor = Colors.red.shade50;
         textColor = Colors.red.shade900;
         icon = Icons.error;
-        title = '🔴 Critical: Out of Petrol';
+        title = 'Critical: Out of Petrol';
         message = 'You have ${currentPetrol.toStringAsFixed(2)}L - not enough for any saved route.';
         break;
       case PetrolWarningLevel.low:
         backgroundColor = Colors.orange.shade50;
         textColor = Colors.orange.shade900;
         icon = Icons.warning;
-        title = '🟠 Low Petrol Alert';
+        title = 'Low Petrol Alert';
         message = 'You have ${currentPetrol.toStringAsFixed(2)}L - only enough for 1-2 shortest routes.';
         break;
       case PetrolWarningLevel.warning:
         backgroundColor = Colors.yellow.shade50;
         textColor = Colors.orange.shade800;
         icon = Icons.info;
-        title = '🟡 Petrol Running Low';
+        title = 'Petrol Running Low';
         message = 'You have ${currentPetrol.toStringAsFixed(2)}L - less than 3 routes possible.';
         break;
       case PetrolWarningLevel.none:

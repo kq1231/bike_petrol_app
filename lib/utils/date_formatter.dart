@@ -5,9 +5,11 @@ class DateFormatter {
   /// Format a date as a friendly string
   /// - Today → "Today"
   /// - Yesterday → "Yesterday"
-  /// - Within 7 days → "2 days ago", "5 days ago"
+  /// - Tomorrow → "Tomorrow"
+  /// - Within 7 days (past) → "2 days ago", "5 days ago"
+  /// - Within 7 days (future) → "in 2 days", "in 5 days"
   /// - Within current year → "Jan 15", "Dec 3"
-  /// - Previous years → "Jan 15, 2023"
+  /// - Other years → "Jan 15, 2023"
   static String formatFriendlyDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -18,8 +20,12 @@ class DateFormatter {
       return 'Today';
     } else if (difference.inDays == 1) {
       return 'Yesterday';
-    } else if (difference.inDays < 7) {
+    } else if (difference.inDays == -1) {
+      return 'Tomorrow';
+    } else if (difference.inDays > 0 && difference.inDays < 7) {
       return '${difference.inDays} days ago';
+    } else if (difference.inDays < 0 && difference.inDays > -7) {
+      return 'in ${-difference.inDays} days';
     } else if (date.year == now.year) {
       return DateFormat('MMM d').format(date); // "Jan 15"
     } else {
