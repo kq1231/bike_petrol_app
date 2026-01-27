@@ -28,17 +28,17 @@ class JourneyRepository {
     final query = _box.query().build();
     final allJourneys = query.find();
     query.close();
-    
+
     final sortedJourneys = _sortJourneys(allJourneys);
-    
+
     // Apply pagination
     final start = offset;
     final end = (offset + limit).clamp(0, sortedJourneys.length);
-    
+
     if (start >= sortedJourneys.length) {
       return [];
     }
-    
+
     return sortedJourneys.sublist(start, end);
   }
 
@@ -49,7 +49,7 @@ class JourneyRepository {
   /// 4. Fallback 3: Distance travelled - DESC (for same date/time)
   List<Journey> _sortJourneys(List<Journey> journeys) {
     final sorted = List<Journey>.from(journeys);
-    
+
     sorted.sort((a, b) {
       // Primary: Sort by user-given start time if both have it
       if (a.startTime != null && b.startTime != null) {
@@ -62,27 +62,20 @@ class JourneyRepository {
       } else if (b.startTime != null) {
         return 1; // b comes first
       }
-      
+
       // Fallback 1: Sort by recordedAt if both have it
-      if (a.recordedAt != null && b.recordedAt != null) {
-        final recordedCompare = b.recordedAt!.compareTo(a.recordedAt!);
-        if (recordedCompare != 0) return recordedCompare;
-      }
-      // If only one has recordedAt, prioritize it
-      else if (a.recordedAt != null) {
-        return -1; // a comes first
-      } else if (b.recordedAt != null) {
-        return 1; // b comes first
-      }
-      
+      final recordedCompare = b.recordedAt.compareTo(a.recordedAt);
+      if (recordedCompare != 0) return recordedCompare;
+      // a comes first
+
       // Fallback 2: Sort by journey date
       final dateCompare = b.date.compareTo(a.date);
       if (dateCompare != 0) return dateCompare;
-      
+
       // Fallback 3: Sort by distance (for same date)
       return b.distanceKm.compareTo(a.distanceKm);
     });
-    
+
     return sorted;
   }
 
@@ -93,17 +86,14 @@ class JourneyRepository {
 
   void addJourney(Journey journey) {
     _box.put(journey);
-    
   }
 
   void deleteJourney(int id) {
     _box.remove(id);
-    
   }
 
   void updateJourney(Journey journey) {
     _box.put(journey, mode: PutMode.update);
-    
   }
 }
 
