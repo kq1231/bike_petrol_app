@@ -18,27 +18,49 @@ class RoutesScreen extends ConsumerWidget {
           itemCount: routes.length,
           itemBuilder: (context, index) {
             final r = routes[index];
-            return Dismissible(
-              key: Key('route_${r.id}'),
-              onDismissed: (direction) {
-                ref.read(routesListProvider.notifier).deleteRoute(r.id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${r.name} deleted')),
-                  );
-                }
-              },
-              background: Container(
-                color: Colors.red,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20),
-                child: const Icon(Icons.delete, color: Colors.white),
-              ),
-              child: Card(
-                child: ListTile(
-                  onTap: () => _showEditDialog(context, ref, r),
-                  title: Text(r.name),
-                  trailing: Text('${r.distanceKm.toStringAsFixed(1)} km'),
+            return Card(
+              child: ListTile(
+                onTap: () => _showEditDialog(context, ref, r),
+                title: Text(r.name),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('${r.distanceKm.toStringAsFixed(1)} km'),
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _showEditDialog(context, ref, r);
+                        } else if (value == 'delete') {
+                          ref.read(routesListProvider.notifier).deleteRoute(r.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('${r.name} deleted')),
+                          );
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: 20),
+                              SizedBox(width: 8),
+                              Text('Edit'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, size: 20, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Delete', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             );
@@ -64,7 +86,9 @@ class RoutesScreen extends ConsumerWidget {
   }
 
   void _showDialog(BuildContext context, WidgetRef ref, DrivingRoute? route) {
-    final nameController = TextEditingController(text: route?.name ?? '');
+    final startController = TextEditingController(text: route?.startLocation ?? '');
+    final endController = TextEditingController(text: route?.endLocation ?? '');
+    final viaController = TextEditingController(text: route?.via ?? '');
     final distanceController =
         TextEditingController(text: route?.distanceKm.toString() ?? '');
     final formKey = GlobalKey<FormState>();
@@ -73,24 +97,46 @@ class RoutesScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(route == null ? 'Add Route' : 'Edit Route'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                    labelText: 'Route Name (e.g., Home -> Work)'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              TextFormField(
-                controller: distanceController,
-                decoration: const InputDecoration(labelText: 'Distance (km)'),
-                keyboardType: TextInputType.number,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-            ],
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: startController,
+                  decoration: const InputDecoration(
+                    labelText: 'Start Location',
+                    hintText: 'e.g., Home',
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: endController,
+                  decoration: const InputDecoration(
+                    labelText: 'End Location',
+                    hintText: 'e.g., Office',
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: viaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Via (Optional)',
+                    hintText: 'e.g., Shahrahe Faisal',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: distanceController,
+                  decoration: const InputDecoration(labelText: 'Distance (km)'),
+                  keyboardType: TextInputType.number,
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -101,7 +147,9 @@ class RoutesScreen extends ConsumerWidget {
               if (formKey.currentState!.validate()) {
                 final newRoute = DrivingRoute(
                   id: route?.id ?? 0,
-                  name: nameController.text,
+                  startLocation: startController.text,
+                  endLocation: endController.text,
+                  via: viaController.text.isEmpty ? null : viaController.text,
                   distanceKm: double.parse(distanceController.text),
                 );
 

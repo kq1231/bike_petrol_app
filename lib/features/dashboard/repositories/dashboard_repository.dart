@@ -129,6 +129,55 @@ class DashboardRepository {
 
     return journeys.isNotEmpty ? journeys.first.distanceKm : 0.0;
   }
+
+  /// Calculate statistics for today only
+  DashboardStatistics calculateTodayStatistics() {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+    // Query refills for today
+    final refillQuery = _refillBox
+        .query(Refill_.date
+            .greaterOrEqual(todayStart.millisecondsSinceEpoch)
+            .and(Refill_.date.lessOrEqual(todayEnd.millisecondsSinceEpoch)))
+        .build();
+    final todayRefillLitres = refillQuery.property(Refill_.litres).sum();
+    final todayRefillCount = refillQuery.count();
+    refillQuery.close();
+
+    // Query journeys for today
+    final journeyQuery = _journeyBox
+        .query(Journey_.date
+            .greaterOrEqual(todayStart.millisecondsSinceEpoch)
+            .and(Journey_.date.lessOrEqual(todayEnd.millisecondsSinceEpoch)))
+        .build();
+    final todayConsumedLitres = journeyQuery.property(Journey_.litresConsumed).sum();
+    final todayJourneyCount = journeyQuery.count();
+    journeyQuery.close();
+
+    // Get overall balance (all time)
+    final allRefillsQuery = _refillBox.query().build();
+    final totalRefills = allRefillsQuery.property(Refill_.litres).sum();
+    allRefillsQuery.close();
+
+    final allJourneysQuery = _journeyBox.query().build();
+    final totalConsumed = allJourneysQuery.property(Journey_.litresConsumed).sum();
+    allJourneysQuery.close();
+
+    final currentBalance = totalRefills - totalConsumed;
+
+    final averageRefill = todayRefillCount > 0 ? todayRefillLitres / todayRefillCount : 0.0;
+
+    return DashboardStatistics(
+      totalRefills: todayRefillLitres,
+      totalConsumed: todayConsumedLitres,
+      currentBalance: currentBalance, // Overall balance stays the same
+      totalJourneys: todayJourneyCount,
+      totalRefillCount: todayRefillCount,
+      averageRefillAmount: averageRefill,
+    );
+  }
 }
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {

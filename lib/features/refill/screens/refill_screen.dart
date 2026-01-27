@@ -99,29 +99,50 @@ class _RefillScreenState extends ConsumerState<RefillScreen> {
                   }
 
                   final r = refills[index];
-                  return Dismissible(
-                    key: Key('refill_${r.id}'),
-                    onDismissed: (direction) async {
-                      ref.read(refillListProvider.notifier).deleteRefill(r.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${r.litres}L deleted')),
-                        );
-                      }
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: Card(
-                      child: ListTile(
-                        onTap: () => _showAddDialog(context, refill: r),
-                        title: Text('${r.litres} L'),
-                        subtitle: Text('${r.date.toLocal()}'.split(' ')[0]),
-                        trailing:
-                            r.totalCost != null ? Text('\$${r.totalCost}') : null,
+                  return Card(
+                    child: ListTile(
+                      onTap: () => _showAddDialog(context, refill: r),
+                      title: Text('${r.litres} L'),
+                      subtitle: Text('${r.date.toLocal()}'.split(' ')[0]),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (r.totalCost != null) Text('\$${r.totalCost}'),
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showAddDialog(context, refill: r);
+                              } else if (value == 'delete') {
+                                ref.read(refillListProvider.notifier).deleteRefill(r.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('${r.litres}L deleted')),
+                                );
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit, size: 20),
+                                    SizedBox(width: 8),
+                                    Text('Edit'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete, size: 20, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   );

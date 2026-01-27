@@ -22,6 +22,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
 
   DrivingRoute? _selectedRoute;
   bool _isRoundTrip = false;
+  bool _isReversed = false;
 
   void _submit([Journey? existingJourney]) {
     if (_formKey.currentState!.validate()) {
@@ -35,10 +36,15 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       // So we use it directly without further multiplication
       final litresConsumed = distance / mileage;
 
-      // Construct Name (Start -> End)
-      final routeName = _routeNameController.text.isNotEmpty
-          ? _routeNameController.text
-          : (_selectedRoute?.name ?? 'Custom Journey');
+      // Construct Name (Start -> End), considering reverse
+      String routeName;
+      if (_routeNameController.text.isNotEmpty) {
+        routeName = _routeNameController.text;
+      } else if (_selectedRoute != null) {
+        routeName = _isReversed ? _selectedRoute!.reverseName : _selectedRoute!.name;
+      } else {
+        routeName = 'Custom Journey';
+      }
 
       final journey = Journey(
         id: existingJourney?.id ?? 0,
@@ -102,23 +108,50 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                   }
 
                   final j = journeys[index];
-                  return Dismissible(
-                    key: Key('journey_${j.id}'),
-                    onDismissed: (direction) {
-                      ref.read(journeyListProvider.notifier).deleteJourney(j.id);
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: Card(
-                      child: ListTile(
-                        onTap: () => _showAddDialog(context, journey: j),
-                        title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
-                        subtitle: Text(j.startName),
-                        trailing: Text('${j.litresConsumed.toStringAsFixed(2)} L'),
+                  return Card(
+                    child: ListTile(
+                      onTap: () => _showAddDialog(context, journey: j),
+                      title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
+                      subtitle: Text(j.startName),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('${j.litresConsumed.toStringAsFixed(2)} L'),
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showAddDialog(context, journey: j);
+                              } else if (value == 'delete') {
+                                ref.read(journeyListProvider.notifier).deleteJourney(j.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Journey deleted')),
+                                );
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit, size: 20),
+                                    SizedBox(width: 8),
+                                    Text('Edit'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete, size: 20, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -153,6 +186,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
       _routeNameController.clear();
       _distanceController.clear();
       _isRoundTrip = false;
+      _isReversed = false;
       _selectedRoute = null;
     }
 
@@ -205,6 +239,7 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                       onChanged: (r) {
                         setDialogState(() {
                           _selectedRoute = r;
+                          _isReversed = false; // Reset reverse when changing route
                           if (r != null) {
                             _routeNameController.text = r.name;
                             // If Round Trip is ON, show doubled distance immediately
@@ -218,6 +253,27 @@ class _JourneyScreenState extends ConsumerState<JourneyScreen> {
                         const Center(child: CircularProgressIndicator()),
                     error: (e, s) => const Text('Error loading routes'),
                   ),
+
+                  const SizedBox(height: 10),
+
+                  // Reverse Route Toggle (only show if route is selected)
+                  if (_selectedRoute != null)
+                    SwitchListTile(
+                      title: const Text('Reverse Route'),
+                      subtitle: Text(_isReversed 
+                        ? _selectedRoute!.reverseName 
+                        : _selectedRoute!.name),
+                      value: _isReversed,
+                      onChanged: (v) {
+                        setDialogState(() {
+                          _isReversed = v;
+                          // Update the route name display
+                          _routeNameController.text = v 
+                            ? _selectedRoute!.reverseName 
+                            : _selectedRoute!.name;
+                        });
+                      },
+                    ),
 
                   const SizedBox(height: 10),
                   TextFormField(

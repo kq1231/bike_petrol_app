@@ -29,9 +29,9 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   final bikeAsync = ref.watch(bikeProvider);
   final double mileage = bikeAsync.value?.mileage ?? 0;
 
-  // Use the new efficient repository for statistics
+  // Use the new efficient repository for today's statistics
   final dashboardRepo = ref.watch(dashboardRepositoryProvider);
-  final stats = dashboardRepo.calculateStatistics();
+  final stats = dashboardRepo.calculateTodayStatistics();
 
   return DashboardStats(
     totalRefills: stats.totalRefills,

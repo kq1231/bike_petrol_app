@@ -62,7 +62,7 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  title: 'Total Refilled',
+                  title: 'Refilled Today',
                   value: '${stats.totalRefills.toStringAsFixed(1)} L',
                   icon: Icons.local_gas_station,
                   color: Colors.blue,
@@ -71,7 +71,7 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: _StatCard(
-                  title: 'Total Consumed',
+                  title: 'Consumed Today',
                   value: '${stats.totalConsumed.toStringAsFixed(1)} L',
                   icon: Icons.route,
                   color: Colors.orange,
@@ -84,7 +84,7 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  title: 'Total Journeys',
+                  title: 'Journeys Today',
                   value: '${stats.totalJourneys}',
                   icon: Icons.directions_bike,
                   color: Colors.purple,
