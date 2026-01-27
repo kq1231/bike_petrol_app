@@ -650,20 +650,22 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
     final end = parts[1];
 
     try {
-      // Try to find exact match with via
+      // Try to find exact match with via (check both directions)
       _selectedRoute = routes.firstWhere(
         (r) =>
-            r.startLocation == start &&
-            r.endLocation == end &&
+            ((r.startLocation == start && r.endLocation == end) ||
+             (r.startLocation == end && r.endLocation == start)) &&
             ((_selectedVia == null && r.via == null) ||
                 r.via == _selectedVia),
       );
     } catch (e) {
-      // If no exact match, find any route with the same start/end
+      // If no exact match, find any route with the same start/end (check both directions)
       // (This handles the case where via is not selected yet but we need distance)
       try {
         _selectedRoute = routes.firstWhere(
-          (r) => r.startLocation == start && r.endLocation == end,
+          (r) =>
+              (r.startLocation == start && r.endLocation == end) ||
+              (r.startLocation == end && r.endLocation == start),
         );
       } catch (e2) {
         _selectedRoute = null;
