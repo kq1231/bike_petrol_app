@@ -1,3 +1,4 @@
+import 'package:bike_petrol_app/features/refill/providers/refill_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
 import 'package:bike_petrol_app/features/dashboard/repositories/dashboard_repository.dart';
@@ -22,12 +23,13 @@ class DashboardStats {
   });
 }
 
-final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
-  // Wait for bike provider to load
-  await ref.read(bikeProvider.future);
+final dashboardStatsProvider = Provider<DashboardStats>((ref) {
+  // Watch the refill provider
+  ref.watch(refillListProvider);
 
-  final bikeAsync = ref.watch(bikeProvider);
-  final double mileage = bikeAsync.value?.mileage ?? 0;
+  // Watch bike provider
+  final bike = ref.watch(bikeProvider);
+  final double mileage = bike?.mileage ?? 0;
 
   // Use the new efficient repository for today's statistics
   final dashboardRepo = ref.watch(dashboardRepositoryProvider);

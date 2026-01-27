@@ -3,29 +3,52 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/dashboard/providers/dashboard_provider.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
 import 'package:bike_petrol_app/features/bike_profile/widgets/bike_dialog.dart';
+import 'package:bike_petrol_app/features/dashboard/widgets/petrol_warning_banner.dart';
+import 'package:bike_petrol_app/features/routes/providers/routes_provider.dart';
+import 'package:bike_petrol_app/common/providers/tab_index_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsync = ref.watch(dashboardStatsProvider);
+    final stats = ref.watch(dashboardStatsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
-      body: statsAsync.when(
-        data: (stats) => _buildBody(context, stats, ref),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
-      ),
+      body: _buildBody(context, stats, ref),
     );
   }
 
   Widget _buildBody(BuildContext context, DashboardStats stats, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
+    // Watch routes provider
+    final routes = ref.watch(routesListProvider);
+    // Get mileage
+    final mileage = ref.read(bikeProvider)?.mileage ?? 0;
+
+    // Calculate warning level using actual routes
+    final warningLevel = PetrolWarningBanner.calculateWarningLevel(
+      currentPetrol: stats.currentBalance,
+      routes: routes,
+      mileage: mileage,
+    );
+
+    return SingleChildScrollView(
+        child: Column(children: [
+      // Low Petrol Warning Banner
+      PetrolWarningBanner(
+        level: warningLevel,
+        currentPetrol: stats.currentBalance,
+        onRefillPressed: () {
+          // Navigate to refill screen (tab index 1)
+          ref.read(tabIndexProvider.notifier).state = 1;
+        },
+      ),
+
+      // Petrol Balance Card
+      Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(children: [
           // Petrol Balance Card
           Card(
             color: stats.currentBalance < 0
@@ -94,17 +117,15 @@ class DashboardScreen extends ConsumerWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    final bikeAsync = ref.read(bikeProvider);
-                    bikeAsync.whenData((bike) {
-                      if (bike != null) {
-                        showDialog(
-                            context: context,
-                            builder: (ctx) => BikeDialog(
-                                  initialBike: bike,
-                                  onSave: () => Navigator.of(context).pop(),
-                                ));
-                      }
-                    });
+                    final bike = ref.read(bikeProvider);
+                    if (bike != null) {
+                      showDialog(
+                          context: context,
+                          builder: (ctx) => BikeDialog(
+                                initialBike: bike,
+                                onSave: () => Navigator.of(context).pop(),
+                              ));
+                    }
                   },
                   child: _StatCard(
                     title: 'Mileage',
@@ -117,9 +138,9 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ],
-      ),
-    );
+        ]),
+      )
+    ]));
   }
 }
 

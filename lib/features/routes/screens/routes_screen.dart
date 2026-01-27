@@ -1,73 +1,116 @@
+import 'package:bike_petrol_app/common/providers/tab_index_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/routes/providers/routes_provider.dart';
 import 'package:bike_petrol_app/common/models/driving_route.dart';
+import 'package:bike_petrol_app/features/dashboard/providers/dashboard_provider.dart';
+import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
+import 'package:bike_petrol_app/features/routes/widgets/route_feasibility_indicator.dart';
+import 'package:bike_petrol_app/features/dashboard/widgets/petrol_warning_banner.dart';
 
 class RoutesScreen extends ConsumerWidget {
   const RoutesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final routesAsync = ref.watch(routesListProvider);
+    final routes = ref.watch(routesListProvider);
+    final stats = ref.watch(dashboardStatsProvider);
+    final bike = ref.watch(bikeProvider);
+
+    // Get current petrol and mileage for feasibility calculation
+    final currentPetrol = stats.currentBalance;
+    final mileage = bike?.mileage ?? 50;
+
+    // Calculate warning level using actual routes
+    final warningLevel = PetrolWarningBanner.calculateWarningLevel(
+      currentPetrol: currentPetrol,
+      routes: routes,
+      mileage: mileage,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Routes')),
-      body: routesAsync.when(
-        data: (routes) => ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: routes.length,
-          itemBuilder: (context, index) {
-            final r = routes[index];
-            return Card(
-              child: ListTile(
-                onTap: () => _showEditDialog(context, ref, r),
-                title: Text(r.name),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('${r.distanceKm.toStringAsFixed(1)} km'),
-                    PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          _showEditDialog(context, ref, r);
-                        } else if (value == 'delete') {
-                          ref.read(routesListProvider.notifier).deleteRoute(r.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${r.name} deleted')),
-                          );
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit, size: 20),
-                              SizedBox(width: 8),
-                              Text('Edit'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete, size: 20, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Delete', style: TextStyle(color: Colors.red)),
-                            ],
-                          ),
+      body: Column(
+        children: [
+          // Low Petrol Warning
+          if (warningLevel != PetrolWarningLevel.none)
+            PetrolWarningBanner(
+              level: warningLevel,
+              currentPetrol: currentPetrol,
+              onRefillPressed: () =>
+                  ref.read(tabIndexProvider.notifier).state = 1,
+            ),
+
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: routes.length,
+              itemBuilder: (context, index) {
+                final r = routes[index];
+                final feasibility =
+                    RouteFeasibilityIndicator.calculateFeasibility(
+                  currentPetrol: currentPetrol,
+                  routeDistance: r.distanceKm,
+                  mileage: mileage,
+                );
+
+                return Card(
+                  child: ListTile(
+                    onTap: () => _showEditDialog(context, ref, r),
+                    leading:
+                        RouteFeasibilityIndicator(feasibility: feasibility),
+                    title: Text(r.name),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('${r.distanceKm.toStringAsFixed(1)} km'),
+                        PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _showEditDialog(context, ref, r);
+                            } else if (value == 'delete') {
+                              ref
+                                  .read(routesListProvider.notifier)
+                                  .deleteRoute(r.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text('${r.name} deleted')),
+                              );
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Edit'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete,
+                                      size: 20, color: Colors.red),
+                                  SizedBox(width: 8),
+                                  Text('Delete',
+                                      style: TextStyle(color: Colors.red)),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDialog(context, ref),
@@ -86,7 +129,8 @@ class RoutesScreen extends ConsumerWidget {
   }
 
   void _showDialog(BuildContext context, WidgetRef ref, DrivingRoute? route) {
-    final startController = TextEditingController(text: route?.startLocation ?? '');
+    final startController =
+        TextEditingController(text: route?.startLocation ?? '');
     final endController = TextEditingController(text: route?.endLocation ?? '');
     final viaController = TextEditingController(text: route?.via ?? '');
     final distanceController =

@@ -7,6 +7,7 @@ import 'package:bike_petrol_app/features/journey/screens/journey_screen.dart';
 import 'package:bike_petrol_app/features/routes/screens/routes_screen.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
 import 'package:bike_petrol_app/features/bike_profile/widgets/bike_dialog.dart';
+import 'package:bike_petrol_app/common/providers/tab_index_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,21 +33,12 @@ class MainNavigation extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Check bike setup
-    final bikeAsync = ref.watch(bikeProvider);
+    final bike = ref.watch(bikeProvider);
 
     return Scaffold(
-      body: bikeAsync.when(
-        data: (bike) {
-          if (bike == null) {
-            // Show Onboarding
-            return BikeDialog(initialBike: null);
-          }
-          // Show Main App
-          return _MainApp();
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
-      ),
+      body: bike == null
+          ? BikeDialog(initialBike: null)
+          : _MainApp(),
     );
   }
 }
@@ -59,8 +51,6 @@ class _MainApp extends ConsumerStatefulWidget {
 }
 
 class _MainAppState extends ConsumerState<_MainApp> {
-  int _currentIndex = 0;
-
   final List<Widget> _screens = [
     const DashboardScreen(),
     const RefillScreen(),
@@ -70,15 +60,17 @@ class _MainAppState extends ConsumerState<_MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(tabIndexProvider);
+
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        currentIndex: currentIndex,
+        onTap: (index) => ref.read(tabIndexProvider.notifier).state = index,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'),
           BottomNavigationBarItem(

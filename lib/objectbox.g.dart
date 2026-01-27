@@ -211,7 +211,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 8411032568290793809),
     name: 'DrivingRoute',
-    lastPropertyId: const obx_int.IdUid(3, 477875252171361954),
+    lastPropertyId: const obx_int.IdUid(6, 1533143360746436382),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -221,15 +221,27 @@ final _entities = <obx_int.ModelEntity>[
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 1321211546970408218),
-        name: 'name',
+        id: const obx_int.IdUid(3, 477875252171361954),
+        name: 'distanceKm',
+        type: 8,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 4933522254407515352),
+        name: 'startLocation',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 477875252171361954),
-        name: 'distanceKm',
-        type: 8,
+        id: const obx_int.IdUid(5, 3655817353611517694),
+        name: 'endLocation',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 1533143360746436382),
+        name: 'via',
+        type: 9,
         flags: 0,
       ),
     ],
@@ -287,7 +299,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [5600487620328257227],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [7696073736322935789],
+    retiredPropertyUids: const [7696073736322935789, 1321211546970408218],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -366,7 +378,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addBool(9, object.isRoundTrip);
         fbb.addOffset(10, notesOffset);
         fbb.addFloat64(11, object.litresConsumed);
-        fbb.addInt64(12, object.recordedAt.millisecondsSinceEpoch);
+        fbb.addInt64(12, object.recordedAt?.millisecondsSinceEpoch);
         fbb.addInt64(13, object.startTime?.millisecondsSinceEpoch);
         fbb.addInt64(14, object.endTime?.millisecondsSinceEpoch);
         fbb.finish(fbb.endTable());
@@ -375,6 +387,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final recordedAtValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          28,
+        );
         final startTimeValue = const fb.Int64Reader().vTableGetNullable(
           buffer,
           rootOffset,
@@ -394,9 +411,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final dateParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
-        final recordedAtParam = DateTime.fromMillisecondsSinceEpoch(
-          const fb.Int64Reader().vTableGet(buffer, rootOffset, 28, 0),
-        );
+        final recordedAtParam = recordedAtValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(recordedAtValue);
         final startTimeParam = startTimeValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(startTimeValue);
@@ -556,11 +573,17 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (DrivingRoute object, fb.Builder fbb) {
-        final nameOffset = fbb.writeString(object.name);
-        fbb.startTable(4);
+        final startLocationOffset = fbb.writeString(object.startLocation);
+        final endLocationOffset = fbb.writeString(object.endLocation);
+        final viaOffset = object.via == null
+            ? null
+            : fbb.writeString(object.via!);
+        fbb.startTable(7);
         fbb.addInt64(0, object.id);
-        fbb.addOffset(1, nameOffset);
         fbb.addFloat64(2, object.distanceKm);
+        fbb.addOffset(3, startLocationOffset);
+        fbb.addOffset(4, endLocationOffset);
+        fbb.addOffset(5, viaOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -573,9 +596,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final nameParam = const fb.StringReader(
+        final startLocationParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 6, '');
+        ).vTableGet(buffer, rootOffset, 10, '');
+        final endLocationParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final viaParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 14);
         final distanceKmParam = const fb.Float64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -584,7 +613,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         );
         final object = DrivingRoute(
           id: idParam,
-          name: nameParam,
+          startLocation: startLocationParam,
+          endLocation: endLocationParam,
+          via: viaParam,
           distanceKm: distanceKmParam,
         );
 
@@ -736,13 +767,23 @@ class DrivingRoute_ {
     _entities[3].properties[0],
   );
 
-  /// See [DrivingRoute.name].
-  static final name = obx.QueryStringProperty<DrivingRoute>(
+  /// See [DrivingRoute.distanceKm].
+  static final distanceKm = obx.QueryDoubleProperty<DrivingRoute>(
     _entities[3].properties[1],
   );
 
-  /// See [DrivingRoute.distanceKm].
-  static final distanceKm = obx.QueryDoubleProperty<DrivingRoute>(
+  /// See [DrivingRoute.startLocation].
+  static final startLocation = obx.QueryStringProperty<DrivingRoute>(
     _entities[3].properties[2],
+  );
+
+  /// See [DrivingRoute.endLocation].
+  static final endLocation = obx.QueryStringProperty<DrivingRoute>(
+    _entities[3].properties[3],
+  );
+
+  /// See [DrivingRoute.via].
+  static final via = obx.QueryStringProperty<DrivingRoute>(
+    _entities[3].properties[4],
   );
 }

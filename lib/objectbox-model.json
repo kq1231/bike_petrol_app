@@ -162,7 +162,7 @@
     },
     {
       "id": "5:8411032568290793809",
-      "lastPropertyId": "3:477875252171361954",
+      "lastPropertyId": "6:1533143360746436382",
       "name": "DrivingRoute",
       "properties": [
         {
@@ -172,14 +172,24 @@
           "flags": 1
         },
         {
-          "id": "2:1321211546970408218",
-          "name": "name",
-          "type": 9
-        },
-        {
           "id": "3:477875252171361954",
           "name": "distanceKm",
           "type": 8
+        },
+        {
+          "id": "4:4933522254407515352",
+          "name": "startLocation",
+          "type": 9
+        },
+        {
+          "id": "5:3655817353611517694",
+          "name": "endLocation",
+          "type": 9
+        },
+        {
+          "id": "6:1533143360746436382",
+          "name": "via",
+          "type": 9
         }
       ],
       "relations": []
@@ -196,7 +206,8 @@
   ],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    7696073736322935789
+    7696073736322935789,
+    1321211546970408218
   ],
   "retiredRelationUids": [],
   "version": 1

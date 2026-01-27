@@ -1,3 +1,4 @@
+import 'package:bike_petrol_app/common/models/driving_route.dart';
 import 'package:bike_petrol_app/common/models/refill.dart';
 import 'package:bike_petrol_app/common/models/journey.dart';
 import 'package:bike_petrol_app/common/providers/objectbox_store_provider.dart';
@@ -52,6 +53,9 @@ class DashboardRepository {
   Box<Journey> get _journeyBox =>
       ref.read(objectBoxStoreProvider).value!.box<Journey>();
 
+  Box<DrivingRoute> get _drivingRouteBox =>
+      ref.read(objectBoxStoreProvider).value!.box<DrivingRoute>();
+
   /// Calculate all dashboard statistics efficiently using aggregate queries
   /// This avoids loading all records into memory
   DashboardStatistics calculateStatistics() {
@@ -62,11 +66,13 @@ class DashboardRepository {
     refillQuery.close();
 
     final journeyQuery = _journeyBox.query().build();
-    final totalConsumedLitres = journeyQuery.property(Journey_.litresConsumed).sum();
+    final totalConsumedLitres =
+        journeyQuery.property(Journey_.litresConsumed).sum();
     final journeyCount = journeyQuery.count();
     journeyQuery.close();
 
-    final averageRefill = refillCount > 0 ? totalRefillLitres / refillCount : 0.0;
+    final averageRefill =
+        refillCount > 0 ? totalRefillLitres / refillCount : 0.0;
     final currentBalance = totalRefillLitres - totalConsumedLitres;
 
     return DashboardStatistics(
@@ -100,11 +106,13 @@ class DashboardRepository {
             .greaterOrEqual(startDate.millisecondsSinceEpoch)
             .and(Journey_.date.lessOrEqual(endDate.millisecondsSinceEpoch)))
         .build();
-    final totalConsumedLitres = journeyQuery.property(Journey_.litresConsumed).sum();
+    final totalConsumedLitres =
+        journeyQuery.property(Journey_.litresConsumed).sum();
     final journeyCount = journeyQuery.count();
     journeyQuery.close();
 
-    final averageRefill = refillCount > 0 ? totalRefillLitres / refillCount : 0.0;
+    final averageRefill =
+        refillCount > 0 ? totalRefillLitres / refillCount : 0.0;
     final currentBalance = totalRefillLitres - totalConsumedLitres;
 
     return DashboardStatistics(
@@ -119,15 +127,14 @@ class DashboardRepository {
 
   /// Get the minimum route distance (for low petrol warning)
   double getMinimumRouteDistance() {
-    final journeyQuery = _journeyBox
-        .query()
-        .order(Journey_.distanceKm)
-        .build();
-    journeyQuery.limit = 1;
-    final journeys = journeyQuery.find();
-    journeyQuery.close();
+    final drivingRouteQuery =
+        _drivingRouteBox.query().order(DrivingRoute_.distanceKm).build();
 
-    return journeys.isNotEmpty ? journeys.first.distanceKm : 0.0;
+    final journey = drivingRouteQuery.findFirst();
+
+    drivingRouteQuery.close();
+
+    return journey?.distanceKm ?? 0.0;
   }
 
   /// Calculate statistics for today only
@@ -152,7 +159,8 @@ class DashboardRepository {
             .greaterOrEqual(todayStart.millisecondsSinceEpoch)
             .and(Journey_.date.lessOrEqual(todayEnd.millisecondsSinceEpoch)))
         .build();
-    final todayConsumedLitres = journeyQuery.property(Journey_.litresConsumed).sum();
+    final todayConsumedLitres =
+        journeyQuery.property(Journey_.litresConsumed).sum();
     final todayJourneyCount = journeyQuery.count();
     journeyQuery.close();
 
@@ -162,12 +170,14 @@ class DashboardRepository {
     allRefillsQuery.close();
 
     final allJourneysQuery = _journeyBox.query().build();
-    final totalConsumed = allJourneysQuery.property(Journey_.litresConsumed).sum();
+    final totalConsumed =
+        allJourneysQuery.property(Journey_.litresConsumed).sum();
     allJourneysQuery.close();
 
     final currentBalance = totalRefills - totalConsumed;
 
-    final averageRefill = todayRefillCount > 0 ? todayRefillLitres / todayRefillCount : 0.0;
+    final averageRefill =
+        todayRefillCount > 0 ? todayRefillLitres / todayRefillCount : 0.0;
 
     return DashboardStatistics(
       totalRefills: todayRefillLitres,

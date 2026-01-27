@@ -8,7 +8,7 @@ class Journey {
   DateTime date;
 
   // NEW: Time tracking fields
-  DateTime recordedAt; // When journey was logged in app (for sorting)
+  DateTime? recordedAt; // When journey was logged in app (for sorting)
 
   DateTime? startTime; // Optional: when journey started
   DateTime? endTime; // Optional: when journey ended
@@ -34,7 +34,7 @@ class Journey {
   Journey({
     this.id = 0,
     required this.date,
-    DateTime? recordedAt,
+    this.recordedAt,
     this.startTime,
     this.endTime,
     required this.startName,
@@ -47,5 +47,5 @@ class Journey {
     this.isRoundTrip = false,
     this.notes,
     this.litresConsumed = 0,
-  }) : recordedAt = recordedAt ?? DateTime.now();
+  });
 }

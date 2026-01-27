@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/refill/providers/refill_provider.dart';
 import 'package:bike_petrol_app/common/models/refill.dart';
+import 'package:bike_petrol_app/utils/date_formatter.dart';
 
 class RefillScreen extends ConsumerStatefulWidget {
   const RefillScreen({super.key});
@@ -62,97 +63,90 @@ class _RefillScreenState extends ConsumerState<RefillScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final refillsAsync = ref.watch(refillListProvider);
+    final paginatedState = ref.watch(refillListProvider);
+    final refills = paginatedState.items;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Petrol Refills')),
-      body: refillsAsync.when(
-        data: (paginatedState) {
-          final refills = paginatedState.items;
-          
-          return RefreshIndicator(
-            onRefresh: () async {
-              await ref.read(refillListProvider.notifier).refresh();
-            },
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (ScrollNotification scrollInfo) {
-                // Load more when user scrolls near bottom
-                if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
-                  if (paginatedState.hasMore && !paginatedState.isLoadingMore) {
-                    ref.read(refillListProvider.notifier).loadMore();
-                  }
-                }
-                return false;
-              },
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: refills.length + (paginatedState.hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  // Show loading indicator at bottom
-                  if (index == refills.length) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.read(refillListProvider.notifier).refresh();
+        },
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            // Load more when user scrolls near bottom
+            if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+              if (paginatedState.hasMore && !paginatedState.isLoadingMore) {
+                ref.read(refillListProvider.notifier).loadMore();
+              }
+            }
+            return false;
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: refills.length + (paginatedState.hasMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              // Show loading indicator at bottom
+              if (index == refills.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
 
-                  final r = refills[index];
-                  return Card(
-                    child: ListTile(
-                      onTap: () => _showAddDialog(context, refill: r),
-                      title: Text('${r.litres} L'),
-                      subtitle: Text('${r.date.toLocal()}'.split(' ')[0]),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (r.totalCost != null) Text('\$${r.totalCost}'),
-                          PopupMenuButton<String>(
-                            onSelected: (value) {
-                              if (value == 'edit') {
-                                _showAddDialog(context, refill: r);
-                              } else if (value == 'delete') {
-                                ref.read(refillListProvider.notifier).deleteRefill(r.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('${r.litres}L deleted')),
-                                );
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.edit, size: 20),
-                                    SizedBox(width: 8),
-                                    Text('Edit'),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete, size: 20, color: Colors.red),
-                                    SizedBox(width: 8),
-                                    Text('Delete', style: TextStyle(color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                            ],
+              final r = refills[index];
+              return Card(
+                child: ListTile(
+                  onTap: () => _showAddDialog(context, refill: r),
+                  title: Text('${r.litres} L'),
+                  subtitle: Text(DateFormatter.formatFriendlyDate(r.date)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (r.totalCost != null) Text('\$${r.totalCost}'),
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            _showAddDialog(context, refill: r);
+                          } else if (value == 'delete') {
+                            ref.read(refillListProvider.notifier).deleteRefill(r.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${r.litres}L deleted')),
+                            );
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, size: 20),
+                                SizedBox(width: 8),
+                                Text('Edit'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, size: 20, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('Delete', style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDialog(context),

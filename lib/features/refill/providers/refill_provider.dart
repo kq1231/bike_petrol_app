@@ -26,12 +26,12 @@ class PaginatedRefillState {
   }
 }
 
-class RefillList extends AsyncNotifier<PaginatedRefillState> {
+class RefillList extends Notifier<PaginatedRefillState> {
   static const int _pageSize = 20;
   int _currentOffset = 0;
 
   @override
-  Future<PaginatedRefillState> build() async {
+  PaginatedRefillState build() {
     final repo = ref.watch(refillRepositoryProvider);
     final items = repo.getRefillsPaginated(limit: _pageSize, offset: 0);
     _currentOffset = items.length;
@@ -44,67 +44,61 @@ class RefillList extends AsyncNotifier<PaginatedRefillState> {
   }
 
   /// Load more refills (called when user scrolls to bottom)
-  Future<void> loadMore() async {
-    final currentState = state.value;
-    if (currentState == null || !currentState.hasMore || currentState.isLoadingMore) {
-      return;
+  void loadMore() {
+    if (state.hasMore && !state.isLoadingMore) {
+      // Set loading flag
+      state = state.copyWith(isLoadingMore: true);
+
+      final repo = ref.read(refillRepositoryProvider);
+      final newItems = repo.getRefillsPaginated(
+        limit: _pageSize,
+        offset: _currentOffset,
+      );
+
+      _currentOffset += newItems.length;
+
+      // Update state with new items
+      state = state.copyWith(
+        items: [...state.items, ...newItems],
+        hasMore: newItems.length >= _pageSize,
+        isLoadingMore: false,
+      );
     }
-
-    // Set loading flag
-    state = AsyncData(currentState.copyWith(isLoadingMore: true));
-
-    final repo = ref.read(refillRepositoryProvider);
-    final newItems = repo.getRefillsPaginated(
-      limit: _pageSize,
-      offset: _currentOffset,
-    );
-
-    _currentOffset += newItems.length;
-
-    // Update state with new items
-    state = AsyncData(currentState.copyWith(
-      items: [...currentState.items, ...newItems],
-      hasMore: newItems.length >= _pageSize,
-      isLoadingMore: false,
-    ));
   }
 
   /// Refresh the list (called on pull-to-refresh)
-  Future<void> refresh() async {
+  void refresh() {
     _currentOffset = 0;
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final repo = ref.read(refillRepositoryProvider);
-      final items = repo.getRefillsPaginated(limit: _pageSize, offset: 0);
-      _currentOffset = items.length;
+    final repo = ref.read(refillRepositoryProvider);
+    final items = repo.getRefillsPaginated(limit: _pageSize, offset: 0);
+    _currentOffset = items.length;
 
-      return PaginatedRefillState(
-        items: items,
-        hasMore: items.length >= _pageSize,
-        isLoadingMore: false,
-      );
-    });
+    state = PaginatedRefillState(
+      items: items,
+      hasMore: items.length >= _pageSize,
+      isLoadingMore: false,
+    );
   }
 
-  void addRefill(Refill refill) async {
+  void addRefill(Refill refill) {
     final repo = ref.read(refillRepositoryProvider);
     repo.addRefill(refill);
-    await refresh();
+    refresh();
   }
 
-  void deleteRefill(int id) async {
+  void deleteRefill(int id) {
     final repo = ref.read(refillRepositoryProvider);
     repo.deleteRefill(id);
-    await refresh();
+    refresh();
   }
 
-  void updateRefill(Refill refill) async {
+  void updateRefill(Refill refill) {
     final repo = ref.read(refillRepositoryProvider);
     repo.updateRefill(refill);
-    await refresh();
+    refresh();
   }
 }
 
-final refillListProvider = AsyncNotifierProvider<RefillList, PaginatedRefillState>(() {
+final refillListProvider = NotifierProvider<RefillList, PaginatedRefillState>(() {
   return RefillList();
 });
