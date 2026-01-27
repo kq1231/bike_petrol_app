@@ -532,8 +532,9 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
                         if (vias.length == 1) {
                           final via = vias.first;
                           _selectedVia = via == 'Direct' ? null : via;
-                          _updateSelectedRoute(routes);
                         }
+                        // Always update the selected route and distance
+                        _updateSelectedRoute(routes);
                       });
                       Navigator.pop(context);
                     },
@@ -649,6 +650,7 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
     final end = parts[1];
 
     try {
+      // Try to find exact match with via
       _selectedRoute = routes.firstWhere(
         (r) =>
             r.startLocation == start &&
@@ -656,12 +658,22 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
             ((_selectedVia == null && r.via == null) ||
                 r.via == _selectedVia),
       );
+    } catch (e) {
+      // If no exact match, find any route with the same start/end
+      // (This handles the case where via is not selected yet but we need distance)
+      try {
+        _selectedRoute = routes.firstWhere(
+          (r) => r.startLocation == start && r.endLocation == end,
+        );
+      } catch (e2) {
+        _selectedRoute = null;
+      }
+    }
 
-      // Update distance
+    // Update distance if route found
+    if (_selectedRoute != null) {
       final dist = _isRoundTrip ? _selectedRoute!.distanceKm * 2 : _selectedRoute!.distanceKm;
       _distanceController.text = dist.toString();
-    } catch (e) {
-      _selectedRoute = null;
     }
   }
 }
