@@ -357,7 +357,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addBool(9, object.isRoundTrip);
         fbb.addOffset(10, notesOffset);
         fbb.addFloat64(11, object.litresConsumed);
-        fbb.addInt64(12, object.recordedAt?.millisecondsSinceEpoch);
+        fbb.addInt64(12, object.recordedAt.millisecondsSinceEpoch);
         fbb.addInt64(13, object.startTime?.millisecondsSinceEpoch);
         fbb.addInt64(14, object.endTime?.millisecondsSinceEpoch);
         fbb.finish(fbb.endTable());
@@ -366,11 +366,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
-        final recordedAtValue = const fb.Int64Reader().vTableGetNullable(
-          buffer,
-          rootOffset,
-          28,
-        );
         final startTimeValue = const fb.Int64Reader().vTableGetNullable(
           buffer,
           rootOffset,
@@ -390,9 +385,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final dateParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
-        final recordedAtParam = recordedAtValue == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(recordedAtValue);
+        final recordedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 28, 0),
+        );
         final startTimeParam = startTimeValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(startTimeValue);
