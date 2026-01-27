@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/journey/providers/journeys_provider.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
@@ -28,8 +29,9 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
 
   late DateTime _selectedDate;
   DrivingRoute? _selectedRoute;
+  String? _selectedRouteBase; // "Start → End" without via
+  String? _selectedVia; // Selected via option
   bool _isRoundTrip = false;
-  bool _isReversed = false;
   bool _recordTime = false;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -76,17 +78,25 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
               (r.startLocation == journey.endName &&
                   r.endLocation == journey.startName),
         );
+
+        // Set route base and via
+        if (_selectedRoute!.startLocation == journey.startName) {
+          _selectedRouteBase = '${_selectedRoute!.startLocation} → ${_selectedRoute!.endLocation}';
+        } else {
+          _selectedRouteBase = '${_selectedRoute!.endLocation} → ${_selectedRoute!.startLocation}';
+        }
+        _selectedVia = _selectedRoute!.via;
       } catch (e) {
         _selectedRoute = null;
+        _selectedRouteBase = null;
+        _selectedVia = null;
       }
 
-      // If matching route found, determine if it's reversed
+      // If matching route found, use saved route mode
       if (_selectedRoute != null) {
         _useCustomEntry = false;
-        _isReversed = _selectedRoute!.startLocation == journey.endName;
       } else {
         _useCustomEntry = true;
-        _isReversed = false;
       }
     }
   }
@@ -113,15 +123,11 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
       String startName;
       String endName;
 
-      if (_selectedRoute != null) {
-        // Using a saved route
-        if (_isReversed) {
-          startName = _selectedRoute!.endLocation;
-          endName = _selectedRoute!.startLocation;
-        } else {
-          startName = _selectedRoute!.startLocation;
-          endName = _selectedRoute!.endLocation;
-        }
+      if (_selectedRouteBase != null) {
+        // Using a saved route - extract from route base
+        final parts = _selectedRouteBase!.split(' → ');
+        startName = parts[0];
+        endName = parts[1];
       } else {
         // Custom entry - use the separate start and end location fields
         startName = _startLocationController.text.trim();
@@ -156,7 +162,7 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
       final journey = Journey(
         id: widget.journey?.id ?? 0,
         date: journeyDate,
-        recordedAt: widget.journey?.recordedAt ?? DateTime.now(),
+        recordedAt: DateTime.now(),
         startTime: startDateTime,
         endTime: endDateTime,
         startName: startName,
@@ -249,7 +255,8 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
                     _useCustomEntry = selection.first;
                     if (_useCustomEntry) {
                       _selectedRoute = null;
-                      _isReversed = false;
+                      _selectedRouteBase = null;
+                      _selectedVia = null;
                     } else {
                       _startLocationController.clear();
                       _endLocationController.clear();
@@ -261,30 +268,44 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
               const SizedBox(height: 10),
 
               // Route Selector (only show if not custom entry)
-              if (!_useCustomEntry)
-                DropdownButtonFormField<DrivingRoute>(
-                  decoration: const InputDecoration(
-                    label: Text('Select Saved Route'),
+              if (!_useCustomEntry) ...[
+                // Route Base Picker
+                GestureDetector(
+                  onTap: () => _showRouteBasePicker(context, routes),
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Select Route',
+                        suffixIcon: Icon(Icons.arrow_drop_down),
+                      ),
+                      controller: TextEditingController(
+                        text: _selectedRouteBase ?? '',
+                      ),
+                      validator: (v) => _selectedRouteBase == null ? 'Please select a route' : null,
+                    ),
                   ),
-                  initialValue: _selectedRoute,
-                  items: routes
-                      .map((r) => DropdownMenuItem(
-                            value: r,
-                            child: Text('${r.name} (${r.distanceKm}km)'),
-                          ))
-                      .toList(),
-                  onChanged: (r) {
-                    setState(() {
-                      _selectedRoute = r;
-                      _isReversed = false;
-                      if (r != null) {
-                        final dist =
-                            _isRoundTrip ? r.distanceKm * 2 : r.distanceKm;
-                        _distanceController.text = dist.toString();
-                      }
-                    });
-                  },
                 ),
+
+                // Via Picker (only show if route base is selected and has multiple vias)
+                if (_selectedRouteBase != null &&
+                    _getViasForRouteBase(routes, _selectedRouteBase!).length > 1) ...[
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () => _showViaPicker(context, routes),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Select Via',
+                          suffixIcon: Icon(Icons.arrow_drop_down),
+                        ),
+                        controller: TextEditingController(
+                          text: _selectedVia ?? 'Direct',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
 
               // Custom Entry Fields (only show if custom entry mode)
               if (_useCustomEntry) ...[
@@ -379,23 +400,6 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
                   ),
               ],
 
-              // Reverse Route Toggle (only show if route is selected and not custom)
-              if (!_useCustomEntry && _selectedRoute != null) ...[
-                const SizedBox(height: 10),
-                SwitchListTile(
-                  title: const Text('Reverse Route'),
-                  subtitle: Text(_isReversed
-                      ? _selectedRoute!.reverseName
-                      : _selectedRoute!.name),
-                  value: _isReversed,
-                  onChanged: (v) {
-                    setState(() {
-                      _isReversed = v;
-                    });
-                  },
-                ),
-              ],
-
               // Distance field
               TextFormField(
                 controller: _distanceController,
@@ -453,5 +457,211 @@ class _JourneyDialogState extends ConsumerState<JourneyDialog> {
         ),
       ],
     );
+  }
+
+  /// Get unique route bases (start → end combinations) from all routes
+  List<String> _getUniqueRouteBases(List<DrivingRoute> routes) {
+    final Set<String> routeBases = {};
+    for (final route in routes) {
+      routeBases.add('${route.startLocation} → ${route.endLocation}');
+      routeBases.add('${route.endLocation} → ${route.startLocation}');
+    }
+    return routeBases.toList()..sort();
+  }
+
+  /// Get all via options for a selected route base
+  List<String> _getViasForRouteBase(List<DrivingRoute> routes, String routeBase) {
+    final parts = routeBase.split(' → ');
+    if (parts.length != 2) return [];
+
+    final start = parts[0];
+    final end = parts[1];
+
+    final vias = routes
+        .where((r) => r.startLocation == start && r.endLocation == end)
+        .map((r) => r.via ?? 'Direct')
+        .toSet()
+        .toList();
+
+    return vias..sort();
+  }
+
+  /// Show Cupertino picker for route base selection
+  void _showRouteBasePicker(BuildContext context, List<DrivingRoute> routes) {
+    final routeBases = _getUniqueRouteBases(routes);
+    int selectedIndex = _selectedRouteBase != null
+        ? routeBases.indexOf(_selectedRouteBase!)
+        : 0;
+    if (selectedIndex < 0) selectedIndex = 0;
+
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) => Container(
+        height: 250,
+        color: CupertinoColors.systemBackground.resolveFrom(context),
+        child: Column(
+          children: [
+            Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground.resolveFrom(context),
+                border: Border(
+                  bottom: BorderSide(
+                    color: CupertinoColors.separator.resolveFrom(context),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  CupertinoButton(
+                    child: const Text('Done'),
+                    onPressed: () {
+                      setState(() {
+                        _selectedRouteBase = routeBases[selectedIndex];
+                        _selectedVia = null;
+                        _selectedRoute = null;
+
+                        // Auto-select via if only one option
+                        final vias = _getViasForRouteBase(routes, _selectedRouteBase!);
+                        if (vias.length == 1) {
+                          final via = vias.first;
+                          _selectedVia = via == 'Direct' ? null : via;
+                          _updateSelectedRoute(routes);
+                        }
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: CupertinoPicker(
+                scrollController: FixedExtentScrollController(
+                  initialItem: selectedIndex,
+                ),
+                itemExtent: 40,
+                onSelectedItemChanged: (index) {
+                  selectedIndex = index;
+                },
+                children: routeBases
+                    .map((base) => Center(child: Text(base)))
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Show Cupertino picker for via selection
+  void _showViaPicker(BuildContext context, List<DrivingRoute> routes) {
+    if (_selectedRouteBase == null) return;
+
+    final vias = _getViasForRouteBase(routes, _selectedRouteBase!);
+    if (vias.isEmpty) return;
+
+    int selectedIndex = _selectedVia != null
+        ? vias.indexOf(_selectedVia!)
+        : 0;
+    if (selectedIndex < 0) selectedIndex = 0;
+
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) => Container(
+        height: 250,
+        color: CupertinoColors.systemBackground.resolveFrom(context),
+        child: Column(
+          children: [
+            Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground.resolveFrom(context),
+                border: Border(
+                  bottom: BorderSide(
+                    color: CupertinoColors.separator.resolveFrom(context),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  CupertinoButton(
+                    child: const Text('Done'),
+                    onPressed: () {
+                      setState(() {
+                        final selectedViaValue = vias[selectedIndex];
+                        _selectedVia = selectedViaValue == 'Direct' ? null : selectedViaValue;
+                        _updateSelectedRoute(routes);
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: CupertinoPicker(
+                scrollController: FixedExtentScrollController(
+                  initialItem: selectedIndex,
+                ),
+                itemExtent: 40,
+                onSelectedItemChanged: (index) {
+                  selectedIndex = index;
+                },
+                children: vias
+                    .map((via) => Center(child: Text(via)))
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Update the selected route based on route base and via
+  void _updateSelectedRoute(List<DrivingRoute> routes) {
+    if (_selectedRouteBase == null) {
+      _selectedRoute = null;
+      return;
+    }
+
+    final parts = _selectedRouteBase!.split(' → ');
+    if (parts.length != 2) {
+      _selectedRoute = null;
+      return;
+    }
+
+    final start = parts[0];
+    final end = parts[1];
+
+    try {
+      _selectedRoute = routes.firstWhere(
+        (r) =>
+            r.startLocation == start &&
+            r.endLocation == end &&
+            ((_selectedVia == null && r.via == null) ||
+                r.via == _selectedVia),
+      );
+
+      // Update distance
+      final dist = _isRoundTrip ? _selectedRoute!.distanceKm * 2 : _selectedRoute!.distanceKm;
+      _distanceController.text = dist.toString();
+    } catch (e) {
+      _selectedRoute = null;
+    }
   }
 }

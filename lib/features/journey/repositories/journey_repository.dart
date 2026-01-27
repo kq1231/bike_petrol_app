@@ -43,40 +43,53 @@ class JourneyRepository {
   }
 
   /// Multi-level sorting logic:
-  /// 1. Primary: User-given time (startTime) - DESC
-  /// 2. Fallback 1: recordedAt (when logged) - DESC
-  /// 3. Fallback 2: Journey date - DESC
-  /// 4. Fallback 3: Distance travelled - DESC (for same date/time)
+  /// Combines journey date with time for accurate sorting
+  /// 1. Primary: Journey date + user-given time (startTime) - DESC
+  /// 2. Fallback 1: Journey date + recordedAt time - DESC
+  /// 3. Fallback 2: Distance travelled - DESC (for same date/time)
   List<Journey> _sortJourneys(List<Journey> journeys) {
     final sorted = List<Journey>.from(journeys);
 
     sorted.sort((a, b) {
-      // Primary: Sort by user-given start time if both have it
-      if (a.startTime != null && b.startTime != null) {
-        final timeCompare = b.startTime!.compareTo(a.startTime!);
-        if (timeCompare != 0) return timeCompare;
-      }
-      // If only one has startTime, prioritize it
-      else if (a.startTime != null) {
-        return -1; // a comes first
-      } else if (b.startTime != null) {
-        return 1; // b comes first
-      }
+      // Get effective DateTime for sorting (date + time)
+      final aDateTime = _getEffectiveDateTime(a);
+      final bDateTime = _getEffectiveDateTime(b);
 
-      // Fallback 1: Sort by recordedAt if both have it
-      final recordedCompare = b.recordedAt.compareTo(a.recordedAt);
-      if (recordedCompare != 0) return recordedCompare;
-      // a comes first
+      // Primary: Sort by effective DateTime
+      final dateTimeCompare = bDateTime.compareTo(aDateTime);
+      if (dateTimeCompare != 0) return dateTimeCompare;
 
-      // Fallback 2: Sort by journey date
-      final dateCompare = b.date.compareTo(a.date);
-      if (dateCompare != 0) return dateCompare;
-
-      // Fallback 3: Sort by distance (for same date)
+      // Fallback: Sort by distance (for same date/time)
       return b.distanceKm.compareTo(a.distanceKm);
     });
 
     return sorted;
+  }
+
+  /// Get the effective DateTime for sorting
+  /// Priority: date + startTime > date + recordedAt time
+  DateTime _getEffectiveDateTime(Journey journey) {
+    if (journey.startTime != null) {
+      // Use journey date with user-given start time
+      return DateTime(
+        journey.date.year,
+        journey.date.month,
+        journey.date.day,
+        journey.startTime!.hour,
+        journey.startTime!.minute,
+        journey.startTime!.second,
+      );
+    } else {
+      // Use journey date with recordedAt time
+      return DateTime(
+        journey.date.year,
+        journey.date.month,
+        journey.date.day,
+        journey.recordedAt.hour,
+        journey.recordedAt.minute,
+        journey.recordedAt.second,
+      );
+    }
   }
 
   /// Get total count of journeys (useful for pagination UI)

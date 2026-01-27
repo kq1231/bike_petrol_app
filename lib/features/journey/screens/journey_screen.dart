@@ -18,6 +18,9 @@ class JourneyScreen extends ConsumerWidget {
         data: (paginatedState) {
           final journeys = paginatedState.items;
 
+          // Build list items with date headers
+          final listItems = _buildListItemsWithHeaders(journeys);
+
           return RefreshIndicator(
             onRefresh: () async {
               await ref.read(journeyListProvider.notifier).refresh();
@@ -35,10 +38,10 @@ class JourneyScreen extends ConsumerWidget {
               },
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: journeys.length + (paginatedState.hasMore ? 1 : 0),
+                itemCount: listItems.length + (paginatedState.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   // Show loading indicator at bottom
-                  if (index == journeys.length) {
+                  if (index == listItems.length) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
@@ -47,15 +50,61 @@ class JourneyScreen extends ConsumerWidget {
                     );
                   }
 
-                  final j = journeys[index];
+                  final item = listItems[index];
+
+                  // Render date header
+                  if (item is _DateHeader) {
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        bottom: 8,
+                        left: 4,
+                      ),
+                      child: Text(
+                        item.dateText,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Render journey card
+                  final j = (item as _JourneyItem).journey;
+                  final routeName = '${j.startName} → ${j.endName}';
                   return Card(
                     child: ListTile(
                       onTap: () => _showAddDialog(context, journey: j),
-                      title: Text('${j.distanceKm.toStringAsFixed(1)} km'),
+                      title: Row(
+                        children: [
+                          Expanded(child: Text(routeName)),
+                          if (j.isRoundTrip)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Round Trip',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(j.startName),
+                          Text('${j.distanceKm.toStringAsFixed(1)} km'),
                           Text(
                             DateFormatter.formatJourneyTime(
                                 j.date, j.startTime, j.endTime),
@@ -134,4 +183,53 @@ class JourneyScreen extends ConsumerWidget {
       builder: (ctx) => JourneyDialog(journey: journey),
     );
   }
+
+  /// Build a list of items that includes both date headers and journey items
+  List<_ListItem> _buildListItemsWithHeaders(List<Journey> journeys) {
+    final List<_ListItem> items = [];
+    DateTime? lastDate;
+
+    for (final journey in journeys) {
+      final journeyDate = DateTime(
+        journey.date.year,
+        journey.date.month,
+        journey.date.day,
+      );
+
+      // Add date header if this is a new date
+      if (lastDate == null ||
+          journeyDate.year != lastDate.year ||
+          journeyDate.month != lastDate.month ||
+          journeyDate.day != lastDate.day) {
+        items.add(_DateHeader(
+          date: journeyDate,
+          dateText: DateFormatter.formatFriendlyDate(journeyDate),
+        ));
+        lastDate = journeyDate;
+      }
+
+      // Add journey item
+      items.add(_JourneyItem(journey: journey));
+    }
+
+    return items;
+  }
+}
+
+// Base class for list items
+abstract class _ListItem {}
+
+// Date header item
+class _DateHeader extends _ListItem {
+  final DateTime date;
+  final String dateText;
+
+  _DateHeader({required this.date, required this.dateText});
+}
+
+// Journey item
+class _JourneyItem extends _ListItem {
+  final Journey journey;
+
+  _JourneyItem({required this.journey});
 }
