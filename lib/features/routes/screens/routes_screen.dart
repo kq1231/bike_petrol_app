@@ -1,4 +1,3 @@
-import 'package:bike_petrol_app/common/providers/tab_index_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/features/routes/providers/routes_provider.dart';
@@ -6,7 +5,7 @@ import 'package:bike_petrol_app/common/models/driving_route.dart';
 import 'package:bike_petrol_app/features/dashboard/providers/dashboard_provider.dart';
 import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
 import 'package:bike_petrol_app/features/routes/widgets/route_feasibility_indicator.dart';
-import 'package:bike_petrol_app/features/dashboard/widgets/petrol_warning_banner.dart';
+import 'package:bike_petrol_app/common/widgets/petrol_warning_banner.dart';
 
 class RoutesScreen extends ConsumerWidget {
   const RoutesScreen({super.key});
@@ -21,25 +20,12 @@ class RoutesScreen extends ConsumerWidget {
     final currentPetrol = stats.currentBalance;
     final mileage = bike?.mileage ?? 50;
 
-    // Calculate warning level using actual routes
-    final warningLevel = PetrolWarningBanner.calculateWarningLevel(
-      currentPetrol: currentPetrol,
-      routes: routes,
-      mileage: mileage,
-    );
-
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Routes')),
       body: Column(
         children: [
           // Low Petrol Warning
-          if (warningLevel != PetrolWarningLevel.none)
-            PetrolWarningBanner(
-              level: warningLevel,
-              currentPetrol: currentPetrol,
-              onRefillPressed: () =>
-                  ref.read(tabIndexProvider.notifier).state = 1,
-            ),
+          const PetrolWarningBanner(),
 
           Expanded(
             child: ListView.builder(

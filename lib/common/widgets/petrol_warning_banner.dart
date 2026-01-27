@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bike_petrol_app/common/models/driving_route.dart';
+import 'package:bike_petrol_app/features/routes/providers/routes_provider.dart';
+import 'package:bike_petrol_app/features/dashboard/providers/dashboard_provider.dart';
+import 'package:bike_petrol_app/features/bike_profile/providers/bike_provider.dart';
+import 'package:bike_petrol_app/common/providers/tab_index_provider.dart';
 
 enum PetrolWarningLevel {
   none,
@@ -8,22 +13,31 @@ enum PetrolWarningLevel {
   critical, // Not enough for any route
 }
 
-class PetrolWarningBanner extends StatelessWidget {
-  final PetrolWarningLevel level;
-  final double currentPetrol;
-  final VoidCallback onRefillPressed;
+class PetrolWarningBanner extends ConsumerWidget {
   final VoidCallback? onDismiss;
 
   const PetrolWarningBanner({
     super.key,
-    required this.level,
-    required this.currentPetrol,
-    required this.onRefillPressed,
     this.onDismiss,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Read all required data from providers
+    final routes = ref.watch(routesListProvider);
+    final stats = ref.watch(dashboardStatsProvider);
+    final bike = ref.watch(bikeProvider);
+
+    final currentPetrol = stats.currentBalance;
+    final mileage = bike?.mileage ?? 0;
+
+    // Calculate warning level
+    final level = _calculateWarningLevel(
+      currentPetrol: currentPetrol,
+      routes: routes,
+      mileage: mileage,
+    );
+
     if (level == PetrolWarningLevel.none) {
       return const SizedBox.shrink();
     }
@@ -103,7 +117,10 @@ class PetrolWarningBanner extends StatelessWidget {
           Row(
             children: [
               ElevatedButton.icon(
-                onPressed: onRefillPressed,
+                onPressed: () {
+                  // Navigate to refill screen (tab index 1)
+                  ref.read(tabIndexProvider.notifier).state = 1;
+                },
                 icon: const Icon(Icons.local_gas_station, size: 18),
                 label: const Text('Refill Now'),
                 style: ElevatedButton.styleFrom(
@@ -118,7 +135,7 @@ class PetrolWarningBanner extends StatelessWidget {
     );
   }
 
-  static PetrolWarningLevel calculateWarningLevel({
+  PetrolWarningLevel _calculateWarningLevel({
     required double currentPetrol,
     required List<DrivingRoute> routes,
     required double mileage,

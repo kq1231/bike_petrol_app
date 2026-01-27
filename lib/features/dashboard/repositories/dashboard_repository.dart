@@ -1,4 +1,3 @@
-import 'package:bike_petrol_app/common/models/driving_route.dart';
 import 'package:bike_petrol_app/common/models/refill.dart';
 import 'package:bike_petrol_app/common/models/journey.dart';
 import 'package:bike_petrol_app/common/providers/objectbox_store_provider.dart';
@@ -52,9 +51,6 @@ class DashboardRepository {
 
   Box<Journey> get _journeyBox =>
       ref.read(objectBoxStoreProvider).value!.box<Journey>();
-
-  Box<DrivingRoute> get _drivingRouteBox =>
-      ref.read(objectBoxStoreProvider).value!.box<DrivingRoute>();
 
   /// Calculate all dashboard statistics efficiently using aggregate queries
   /// This avoids loading all records into memory
@@ -123,18 +119,6 @@ class DashboardRepository {
       totalRefillCount: refillCount,
       averageRefillAmount: averageRefill,
     );
-  }
-
-  /// Get the minimum route distance (for low petrol warning)
-  double getMinimumRouteDistance() {
-    final drivingRouteQuery =
-        _drivingRouteBox.query().order(DrivingRoute_.distanceKm).build();
-
-    final journey = drivingRouteQuery.findFirst();
-
-    drivingRouteQuery.close();
-
-    return journey?.distanceKm ?? 0.0;
   }
 
   /// Calculate statistics for today only
